@@ -21,11 +21,11 @@ public class UserDAO {
     
     // SQL queries
     private static final String GET_USER_BY_EMAIL = 
-        "SELECT id, name, password, email, phone, gender, address, role_id, status, created_at, updated_at " +
+        "SELECT id, name, password, email, phone, gender, address, avatar_url, role_id, status, created_at, updated_at " +
         "FROM users WHERE email = ?";
     
     private static final String GET_USER_BY_ID = 
-        "SELECT id, name, password, email, phone, gender, address, role_id, status, created_at, updated_at " +
+        "SELECT id, name, password, email, phone, gender, address, avatar_url, role_id, status, created_at, updated_at " +
         "FROM users WHERE id = ?";
     
     private static final String CREATE_USER = 
@@ -49,8 +49,20 @@ public class UserDAO {
         "UPDATE users SET password = ?, updated_at = ? WHERE id = ?";
     
     private static final String GET_USERS_BY_ROLE = 
-        "SELECT id, name, password, email, phone, gender, address, role_id, status, created_at, updated_at " +
+        "SELECT id, name, password, email, phone, gender, address, avatar_url, role_id, status, created_at, updated_at " +
         "FROM users WHERE role_id = ? ORDER BY created_at DESC";
+    
+    private static final String UPDATE_USER_PROFILE = 
+        "UPDATE users SET name = ?, phone = ?, gender = ?, address = ?, updated_at = ? WHERE id = ?";
+    
+    private static final String UPDATE_USER_EMAIL = 
+        "UPDATE users SET email = ?, updated_at = ? WHERE id = ?";
+    
+    private static final String CHECK_EMAIL_EXISTS_EXCLUDING_USER = 
+        "SELECT COUNT(*) FROM users WHERE email = ? AND id != ?";
+    
+    private static final String UPDATE_AVATAR = 
+        "UPDATE users SET avatar_url = ?, updated_at = ? WHERE id = ?";
     
     /**
      * Get user by email address
@@ -373,10 +385,173 @@ public class UserDAO {
         user.setPhone(resultSet.getString("phone"));
         user.setGender(resultSet.getString("gender"));
         user.setAddress(resultSet.getString("address"));
+        user.setAvatarUrl(resultSet.getString("avatar_url"));
         user.setRoleId(resultSet.getInt("role_id"));
         user.setStatus(resultSet.getString("status"));
         user.setCreatedAt(resultSet.getTimestamp("created_at"));
         user.setUpdatedAt(resultSet.getTimestamp("updated_at"));
         return user;
+    }
+    
+    /**
+     * Update user profile (name, phone, gender, address) without password
+     * 
+     * @param userId User ID to update
+     * @param name New name
+     * @param phone New phone
+     * @param gender New gender
+     * @param address New address
+     * @return true if successful, false otherwise
+     */
+    public boolean updateUserProfile(int userId, String name, String phone, String gender, String address) {
+        if (userId <= 0) {
+            LOGGER.warning("Invalid user ID: " + userId);
+            return false;
+        }
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_USER_PROFILE)) {
+            
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            
+            statement.setString(1, name);
+            statement.setString(2, phone);
+            statement.setString(3, gender);
+            statement.setString(4, address);
+            statement.setTimestamp(5, now);
+            statement.setInt(6, userId);
+            
+            int rowsAffected = statement.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                LOGGER.info("User profile updated successfully for user ID: " + userId);
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error updating user profile for user ID: " + userId, e);
+        }
+        
+        LOGGER.warning("Failed to update user profile for user ID: " + userId);
+        return false;
+    }
+    
+    /**
+     * Update user email
+     * 
+     * @param userId User ID to update
+     * @param newEmail New email address
+     * @return true if successful, false otherwise
+     */
+    public boolean updateUserEmail(int userId, String newEmail) {
+        if (userId <= 0) {
+            LOGGER.warning("Invalid user ID: " + userId);
+            return false;
+        }
+        
+        if (newEmail == null || newEmail.trim().isEmpty()) {
+            LOGGER.warning("Email parameter is null or empty");
+            return false;
+        }
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_USER_EMAIL)) {
+            
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            
+            statement.setString(1, newEmail.trim().toLowerCase());
+            statement.setTimestamp(2, now);
+            statement.setInt(3, userId);
+            
+            int rowsAffected = statement.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                LOGGER.info("User email updated successfully for user ID: " + userId);
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error updating user email for user ID: " + userId, e);
+        }
+        
+        LOGGER.warning("Failed to update user email for user ID: " + userId);
+        return false;
+    }
+    
+    /**
+     * Check if email exists excluding current user
+     * 
+     * @param email Email to check
+     * @param userId Current user ID to exclude
+     * @return true if email exists, false otherwise
+     */
+    public boolean checkEmailExistsExcludingUser(String email, int userId) {
+        if (email == null || email.trim().isEmpty()) {
+            LOGGER.warning("Email parameter is null or empty");
+            return false;
+        }
+        
+        if (userId <= 0) {
+            LOGGER.warning("Invalid user ID: " + userId);
+            return false;
+        }
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(CHECK_EMAIL_EXISTS_EXCLUDING_USER)) {
+            
+            statement.setString(1, email.trim().toLowerCase());
+            statement.setInt(2, userId);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    boolean exists = count > 0;
+                    LOGGER.info("Email exists check for " + email + " excluding user " + userId + ": " + exists);
+                    return exists;
+                }
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error checking email existence: " + email, e);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Update user avatar URL
+     * 
+     * @param userId User ID to update
+     * @param avatarUrl Avatar URL path
+     * @return true if successful, false otherwise
+     */
+    public boolean updateAvatar(int userId, String avatarUrl) {
+        if (userId <= 0) {
+            LOGGER.warning("Invalid user ID: " + userId);
+            return false;
+        }
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_AVATAR)) {
+            
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            
+            statement.setString(1, avatarUrl);
+            statement.setTimestamp(2, now);
+            statement.setInt(3, userId);
+            
+            int rowsAffected = statement.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                LOGGER.info("Avatar updated successfully for user ID: " + userId);
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error updating avatar for user ID: " + userId, e);
+        }
+        
+        LOGGER.warning("Failed to update avatar for user ID: " + userId);
+        return false;
     }
 }

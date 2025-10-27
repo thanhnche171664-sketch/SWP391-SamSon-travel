@@ -105,6 +105,15 @@ public class AuthFilter implements Filter {
             return;
         }
         
+        // Check if accessing profile - all authenticated users can access
+        if (path.equals("/profile") || path.equals("/profile.jsp") || path.startsWith("/profile/") ||
+            path.equals("/update-profile") || path.equals("/change-password") || path.equals("/upload-avatar")) {
+            LOGGER.info("Profile access granted for authenticated user");
+            updateLastActivity(session);
+            chain.doFilter(request, response);
+            return;
+        }
+        
         // Check role-based access
         if (!hasAccess(role.getRoleName(), path)) {
             LOGGER.warning("Access denied for role " + role.getRoleName() + " to " + path);
@@ -145,24 +154,32 @@ public class AuthFilter implements Filter {
                 return path.startsWith("/service-manager/") || 
                        path.startsWith("/customer/") ||
                        path.equals("/dashboard.jsp") ||
-                       path.equals("/profile.jsp");
+                       path.equals("/profile.jsp") ||
+                       path.equals("/profile") ||
+                       path.startsWith("/profile/");
                        
             case HOTEL_MANAGER_ROLE:
                 return path.startsWith("/hotel-manager/") || 
                        path.startsWith("/customer/") ||
                        path.equals("/dashboard.jsp") ||
-                       path.equals("/profile.jsp");
+                       path.equals("/profile.jsp") ||
+                       path.equals("/profile") ||
+                       path.startsWith("/profile/");
                        
             case FRONT_OFFICE_ROLE:
                 return path.startsWith("/front-office/") || 
                        path.startsWith("/customer/") ||
                        path.equals("/dashboard.jsp") ||
-                       path.equals("/profile.jsp");
+                       path.equals("/profile.jsp") ||
+                       path.equals("/profile") ||
+                       path.startsWith("/profile/");
                        
             case CUSTOMER_ROLE:
                 return path.startsWith("/customer/") ||
                        path.equals("/dashboard.jsp") ||
                        path.equals("/profile.jsp") ||
+                       path.equals("/profile") ||
+                       path.startsWith("/profile/") ||
                        path.startsWith("/booking/") ||
                        path.startsWith("/payment/");
                        

@@ -20,6 +20,7 @@ CREATE TABLE Users (
     phone VARCHAR(20),
     gender VARCHAR(10) CHECK (gender IN ('male','female','other')),
     address VARCHAR(255),
+    avatar_url VARCHAR(255),
     role_id INT,
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active','pending','inactive','suspended')),
     created_at DATETIME DEFAULT GETDATE(),
