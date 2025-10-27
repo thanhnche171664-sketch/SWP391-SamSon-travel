@@ -11,7 +11,7 @@ public class DBContext {
     private static final String DATABASE_NAME = "booking_travel";
     private static final String PORT_NUMBER = "1433";
     private static final String USERNAME = "sa";   // để đúng user SQL Server
-    private static final String PASSWORD = "123";  // đúng mật khẩu tài khoản sa
+    private static final String PASSWORD = "123";  // ⚠️ Mật khẩu SQL Server của bạn
 
     // Connection string CHUẨN
     private static final String CONNECTION_URL = 
