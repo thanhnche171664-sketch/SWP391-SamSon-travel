@@ -4,7 +4,6 @@
  */
 package util;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -176,15 +175,15 @@ public class EmailUtil {
             });
             
             // Create message
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(FROM_EMAIL, FROM_NAME, "UTF-8"));
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(FROM_EMAIL, FROM_NAME));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject(subject, "UTF-8");
+            message.setSubject(subject);
             
             if (isHtml) {
                 message.setContent(content, "text/html; charset=utf-8");
             } else {
-                message.setText(content, "UTF-8");
+                message.setText(content);
             }
             
             // Send message
@@ -193,9 +192,6 @@ public class EmailUtil {
             
         } catch (MessagingException e) {
             LOGGER.log(Level.SEVERE, "Messaging error sending email to: " + toEmail, e);
-            return false;
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.log(Level.SEVERE, "Encoding error sending email to: " + toEmail, e);
             return false;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "General error sending email to: " + toEmail, e);

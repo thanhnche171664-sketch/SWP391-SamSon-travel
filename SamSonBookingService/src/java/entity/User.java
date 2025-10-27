@@ -14,6 +14,7 @@ public class User {
     private String phone;
     private String gender;
     private String address;
+    private String avatarUrl;
     private int roleId;
     private String status;
     private Timestamp createdAt;
@@ -22,7 +23,7 @@ public class User {
     public User() {}
 
     public User(int id, String name, String password, String email, String phone, String gender, String address,
-                int roleId, String status, Timestamp createdAt, Timestamp updatedAt) {
+                String avatarUrl, int roleId, String status, Timestamp createdAt, Timestamp updatedAt) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -30,6 +31,7 @@ public class User {
         this.phone = phone;
         this.gender = gender;
         this.address = address;
+        this.avatarUrl = avatarUrl;
         this.roleId = roleId;
         this.status = status;
         this.createdAt = createdAt;
@@ -91,6 +93,14 @@ public class User {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public int getRoleId() {

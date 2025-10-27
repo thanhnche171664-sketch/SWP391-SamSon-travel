@@ -104,6 +104,46 @@ public class ResetTokenDAO {
     }
     
     /**
+     * Create token with ResetToken object
+     * 
+     * @param resetToken ResetToken object to create
+     * @return true if successful, false otherwise
+     */
+    public boolean createToken(ResetToken resetToken) {
+        if (resetToken == null || resetToken.getUserId() <= 0 || 
+            resetToken.getToken() == null || resetToken.getToken().trim().isEmpty()) {
+            LOGGER.warning("Invalid reset token data");
+            return false;
+        }
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(CREATE_VERIFICATION_TOKEN)) {
+            
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            
+            statement.setInt(1, resetToken.getUserId());
+            statement.setString(2, resetToken.getToken().trim());
+            statement.setTimestamp(3, resetToken.getExpiresAt());
+            statement.setTimestamp(4, now);
+            statement.setTimestamp(5, now);
+            statement.setBoolean(6, resetToken.isUsed());
+            
+            int rowsAffected = statement.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                LOGGER.info("Reset token created successfully for user: " + resetToken.getUserId());
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error creating reset token for user: " + resetToken.getUserId(), e);
+        }
+        
+        LOGGER.warning("Failed to create reset token for user: " + resetToken.getUserId());
+        return false;
+    }
+    
+    /**
      * Get token by token value
      * 
      * @param token Token value

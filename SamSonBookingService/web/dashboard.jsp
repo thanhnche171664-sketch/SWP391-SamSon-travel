@@ -319,16 +319,10 @@
                     </c:when>
                 </c:choose>
                 
-                <a href="#" class="action-btn">
+                <a href="${pageContext.request.contextPath}/profile" class="action-btn">
                     <i class="fas fa-user-edit"></i>
                     <h4>Cập nhật thông tin</h4>
                     <p>Chỉnh sửa thông tin cá nhân</p>
-                </a>
-                
-                <a href="#" class="action-btn">
-                    <i class="fas fa-key"></i>
-                    <h4>Đổi mật khẩu</h4>
-                    <p>Thay đổi mật khẩu tài khoản</p>
                 </a>
             </div>
             

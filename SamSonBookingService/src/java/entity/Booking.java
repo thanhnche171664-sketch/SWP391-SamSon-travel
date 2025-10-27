@@ -5,6 +5,7 @@
 package entity;
 
 import java.util.Date;
+import java.util.List;
 
 public class Booking {
     private int id;
@@ -21,6 +22,7 @@ public class Booking {
     private String status;
     private Date createdAt;
     private Date updatedAt;
+    private List<BookingDetail> bookingDetails;
 
     public Booking() {}
 
@@ -151,6 +153,14 @@ public class Booking {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<BookingDetail> getBookingDetails() {
+        return bookingDetails;
+    }
+
+    public void setBookingDetails(List<BookingDetail> bookingDetails) {
+        this.bookingDetails = bookingDetails;
     }
 
     

@@ -8,6 +8,7 @@ public class BookingDetail {
     private int id;
     private int bookingId;
     private int categoryId;
+    private String categoryName;
     private int quantity;
     private double price;
 
@@ -59,6 +60,14 @@ public class BookingDetail {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     
