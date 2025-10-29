@@ -9,12 +9,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- * Utility class for handling file uploads
- * Provides methods for validating and saving uploaded files
+ * Utility class for handling file uploads with validation and security
  * 
  * @author SamSon Travel Team
  */
@@ -22,211 +26,199 @@ public class FileUploadUtil {
     
     private static final Logger LOGGER = Logger.getLogger(FileUploadUtil.class.getName());
     
-    // Allowed file types for avatar upload
-    private static final String[] ALLOWED_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/gif"};
-    private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif"};
+    // Allowed image MIME types
+    private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList(
+        "image/jpeg",
+        "image/jpg", 
+        "image/png",
+        "image/gif",
+        "image/webp"
+    );
     
-    // File size limits (5MB in bytes)
+    // Allowed image file extensions
+    private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList(
+        ".jpg", ".jpeg", ".png", ".gif", ".webp"
+    );
+    
+    // Maximum file size (5MB)
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
     
     /**
      * Validate uploaded image file
-     * 
      * @param filePart The uploaded file part
-     * @return Validation result message (null if valid)
+     * @return Error message if validation fails, null if valid
      */
     public static String validateImageFile(Part filePart) {
-        if (filePart == null || filePart.getSize() == 0) {
-            return "Không có file được chọn";
+        if (filePart == null) {
+            return "Không có file được tải lên";
         }
         
         // Check file size
+        if (filePart.getSize() == 0) {
+            return "File không được để trống";
+        }
+        
         if (filePart.getSize() > MAX_FILE_SIZE) {
-            return "File quá lớn. Kích thước tối đa là 5MB";
+            return "Kích thước file không được vượt quá 5MB";
         }
         
         // Check content type
         String contentType = filePart.getContentType();
-        boolean isValidType = false;
-        for (String type : ALLOWED_TYPES) {
-            if (type.equalsIgnoreCase(contentType)) {
-                isValidType = true;
-                break;
-            }
-        }
-        
-        if (!isValidType) {
-            return "Định dạng file không được hỗ trợ. Chỉ chấp nhận JPG, PNG, GIF";
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+            return "Chỉ được phép tải lên file ảnh (JPG, PNG, GIF, WebP)";
         }
         
         // Check file extension
         String fileName = getFileName(filePart);
-        if (fileName != null && fileName.contains(".")) {
-            String extension = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
-            boolean isValidExtension = false;
-            for (String ext : ALLOWED_EXTENSIONS) {
-                if (ext.equals(extension)) {
-                    isValidExtension = true;
-                    break;
-                }
-            }
-            
-            if (!isValidExtension) {
-                return "Phần mở rộng file không hợp lệ. Chỉ chấp nhận .jpg, .jpeg, .png, .gif";
-            }
+        if (fileName == null || fileName.isEmpty()) {
+            return "Tên file không hợp lệ";
         }
         
-        LOGGER.info("File validation successful for: " + fileName);
+        String extension = getFileExtension(fileName);
+        if (extension == null || !ALLOWED_IMAGE_EXTENSIONS.contains(extension.toLowerCase())) {
+            return "Định dạng file không được hỗ trợ";
+        }
+        
         return null; // Valid file
     }
     
     /**
-     * Save uploaded file to disk
-     * 
-     * @param filePart The uploaded file part
-     * @param uploadPath Directory path to save file
-     * @param fileName Desired file name
-     * @return true if save successful, false otherwise
+     * Ensure directory exists, create if not
+     * @param directoryPath Path to directory
+     * @return true if directory exists or was created successfully
      */
-    public static boolean saveFile(Part filePart, String uploadPath, String fileName) {
-        if (filePart == null || uploadPath == null || fileName == null) {
-            LOGGER.warning("Invalid parameters for saveFile");
-            return false;
-        }
-        
+    public static boolean ensureDirectoryExists(String directoryPath) {
         try {
-            // Create upload directory if not exists
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-                LOGGER.info("Created upload directory: " + uploadPath);
+            Path path = Paths.get(directoryPath);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+                LOGGER.info("Created directory: " + directoryPath);
             }
-            
-            // Create file path
-            String filePath = uploadPath + File.separator + fileName;
-            File file = new File(filePath);
-            
-            // Save file
-            try (InputStream inputStream = filePart.getInputStream();
-                 FileOutputStream outputStream = new FileOutputStream(file)) {
-                
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                
-                LOGGER.info("File saved successfully: " + filePath);
-                return true;
-            }
-            
+            return true;
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error saving file: " + fileName, e);
+            LOGGER.severe("Failed to create directory: " + directoryPath + " - " + e.getMessage());
             return false;
         }
     }
     
     /**
-     * Delete a file from disk
-     * 
-     * @param filePath Path to file to delete
-     * @return true if delete successful, false otherwise
-     */
-    public static boolean deleteFile(String filePath) {
-        if (filePath == null || filePath.trim().isEmpty()) {
-            LOGGER.warning("Invalid file path for deletion");
-            return false;
-        }
-        
-        try {
-            File file = new File(filePath);
-            if (file.exists() && file.isFile()) {
-                boolean deleted = file.delete();
-                if (deleted) {
-                    LOGGER.info("File deleted successfully: " + filePath);
-                } else {
-                    LOGGER.warning("Failed to delete file: " + filePath);
-                }
-                return deleted;
-            } else {
-                LOGGER.warning("File not found: " + filePath);
-                return false;
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error deleting file: " + filePath, e);
-            return false;
-        }
-    }
-    
-    /**
-     * Get file name from Part
-     * 
-     * @param part File part
-     * @return File name or null if not found
+     * Get filename from Part
+     * @param part The file part
+     * @return Filename or null if not found
      */
     public static String getFileName(Part part) {
         String contentDisposition = part.getHeader("content-disposition");
+        if (contentDisposition == null) {
+            return null;
+        }
+        
         String[] tokens = contentDisposition.split(";");
         for (String token : tokens) {
             if (token.trim().startsWith("filename")) {
-                String fileName = token.substring(token.indexOf("=") + 1);
-                // Remove quotes
-                if (fileName.startsWith("\"") && fileName.endsWith("\"")) {
-                    fileName = fileName.substring(1, fileName.length() - 1);
-                }
-                return fileName;
+                return token.substring(token.indexOf("=") + 2, token.length() - 1);
             }
         }
         return null;
     }
     
     /**
-     * Generate unique file name
-     * Format: user_{userId}_{timestamp}.{extension}
-     * 
+     * Generate unique filename for user avatar
      * @param userId User ID
-     * @param originalFileName Original file name to extract extension
-     * @return Generated file name
+     * @param originalFileName Original filename
+     * @return Generated unique filename
      */
     public static String generateFileName(int userId, String originalFileName) {
-        String extension = "";
-        if (originalFileName != null && originalFileName.contains(".")) {
-            extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        }
-        long timestamp = System.currentTimeMillis();
-        return "user_" + userId + "_" + timestamp + extension;
+        String extension = getFileExtension(originalFileName);
+        String uniqueId = UUID.randomUUID().toString().substring(0, 8);
+        return "user_" + userId + "_" + uniqueId + extension;
     }
     
     /**
-     * Get file extension from file name
-     * 
-     * @param fileName File name
-     * @return Extension including dot (e.g., ".jpg")
+     * Get file extension from filename
+     * @param fileName Filename
+     * @return File extension with dot (e.g., ".jpg") or null
      */
-    public static String getFileExtension(String fileName) {
-        if (fileName == null || !fileName.contains(".")) {
-            return "";
+    private static String getFileExtension(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return null;
         }
-        return fileName.substring(fileName.lastIndexOf("."));
+        
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
+            return null;
+        }
+        
+        return fileName.substring(lastDotIndex);
     }
     
     /**
-     * Check if directory exists, create if not
-     * 
-     * @param dirPath Directory path
-     * @return true if directory exists or created successfully
+     * Save uploaded file to specified path
+     * @param filePart The uploaded file part
+     * @param uploadPath Directory path to save file
+     * @param fileName Filename to save as
+     * @return true if saved successfully, false otherwise
      */
-    public static boolean ensureDirectoryExists(String dirPath) {
-        try {
-            File dir = new File(dirPath);
-            if (!dir.exists()) {
-                return dir.mkdirs();
+    public static boolean saveFile(Part filePart, String uploadPath, String fileName) {
+        try (InputStream inputStream = filePart.getInputStream()) {
+            File file = new File(uploadPath, fileName);
+            
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                outputStream.flush();
             }
+            
+            LOGGER.info("File saved successfully: " + file.getAbsolutePath());
             return true;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error creating directory: " + dirPath, e);
+            
+        } catch (IOException e) {
+            LOGGER.severe("Failed to save file: " + fileName + " - " + e.getMessage());
             return false;
         }
     }
+    
+    /**
+     * Delete file from filesystem
+     * @param filePath Path to file to delete
+     * @return true if deleted successfully or file doesn't exist, false otherwise
+     */
+    public static boolean deleteFile(String filePath) {
+        try {
+            Path path = Paths.get(filePath);
+            if (Files.exists(path)) {
+                Files.delete(path);
+                LOGGER.info("File deleted successfully: " + filePath);
+            }
+            return true;
+        } catch (IOException e) {
+            LOGGER.severe("Failed to delete file: " + filePath + " - " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Check if file exists
+     * @param filePath Path to file
+     * @return true if file exists, false otherwise
+     */
+    public static boolean fileExists(String filePath) {
+        return Files.exists(Paths.get(filePath));
+    }
+    
+    /**
+     * Get file size in bytes
+     * @param filePath Path to file
+     * @return File size in bytes, -1 if error
+     */
+    public static long getFileSize(String filePath) {
+        try {
+            return Files.size(Paths.get(filePath));
+        } catch (IOException e) {
+            LOGGER.severe("Failed to get file size: " + filePath + " - " + e.getMessage());
+            return -1;
+        }
+    }
 }
-

@@ -10,6 +10,7 @@
 
     <!-- Welcome File List -->
     <welcome-file-list>
+        <welcome-file>home</welcome-file>
         <welcome-file>index.html</welcome-file>
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
@@ -108,6 +109,15 @@
     <servlet-mapping>
         <servlet-name>RequestEmailChangeServlet</servlet-name>
         <url-pattern>/request-email-change</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>controller.HomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
     <!-- Filter Mappings -->

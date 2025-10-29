@@ -25,6 +25,10 @@ public class DBContext {
     private static final String USERNAME = "sa";
     private static final String PASSWORD = "123";
     
+    // Connection pool settings
+    private static final int MAX_CONNECTIONS = 10;
+    private static final int CONNECTION_TIMEOUT = 30;
+    
     // Connection string with SQL Server specific configurations
     private static final String CONNECTION_STRING = String.format(
         "jdbc:sqlserver://%s:%s;databaseName=%s;user=%s;password=%s;encrypt=true;trustServerCertificate=true;loginTimeout=30;",

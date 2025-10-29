@@ -7,13 +7,13 @@ package controller;
 import dao.UserDAO;
 import entity.User;
 import util.PasswordUtil;
-import util.ValidationUtil;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.ValidationUtil;
 
 /**
  * Servlet for handling password change requests via AJAX
@@ -133,4 +133,6 @@ public class ChangePasswordServlet extends HttpServlet {
         out.flush();
     }
 }
+
+
 
