@@ -4,22 +4,22 @@
  */
 package entity;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class Discount {
     private int discountId;
     private int categoryId;
     private String discountType;
     private double value;
-    private Date startDate;
-    private Date endDate;
+    private Timestamp startDate;
+    private Timestamp endDate;
     private String status;
-    private Date createdAt;
-    private Date updatedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
     public Discount() {}
 
-    public Discount(int discountId, int categoryId, String discountType, double value, Date startDate, Date endDate, String status, Date createdAt, Date updatedAt) {
+    public Discount(int discountId, int categoryId, String discountType, double value, Timestamp startDate, Timestamp endDate, String status, Timestamp createdAt, Timestamp updatedAt) {
         this.discountId = discountId;
         this.categoryId = categoryId;
         this.discountType = discountType;
@@ -63,19 +63,19 @@ public class Discount {
         this.value = value;
     }
 
-    public Date getStartDate() {
+    public Timestamp getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(Timestamp startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public Timestamp getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(Timestamp endDate) {
         this.endDate = endDate;
     }
 
@@ -87,19 +87,19 @@ public class Discount {
         this.status = status;
     }
 
-    public Date getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public Timestamp getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
 
