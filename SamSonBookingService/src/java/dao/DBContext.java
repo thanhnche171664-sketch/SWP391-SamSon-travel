@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class DBContext {
     
     // Database configuration constants
-    private static final String SERVER_NAME = "localhost";
+    private static final String SERVER_NAME = "LAPTOP-KKBAAD4J";
     private static final String DATABASE_NAME = "booking_travel";
     private static final String PORT_NUMBER = "1433";
     private static final String USERNAME = "sa";
@@ -110,4 +110,13 @@ public class DBContext {
             SERVER_NAME, PORT_NUMBER, DATABASE_NAME, USERNAME
         );
     }
+    public static void main(String[] args) {
+        LOGGER.info("Testing SQL Server connection...");
+        if (testConnection()) {
+            LOGGER.info(" Connection test successful!");
+        } else {
+            LOGGER.warning("Connection test failed. Please check configuration.");
+        }
+    }
+
 }
