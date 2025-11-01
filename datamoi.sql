@@ -119,6 +119,7 @@ CREATE TABLE Wellness_Services (
     duration_minutes INT NULL,
     operating_hours NVARCHAR(100) NULL,
     capacity INT NULL,
+	image_url NVARCHAR(255) NULL,
     status VARCHAR(20) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','INACTIVE')),
     created_at DATETIME DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE(),
@@ -275,10 +276,35 @@ INSERT INTO Meal_Services (hotel_id, category_id, meal_type, meal_date, descript
     (1, 3, 'DINNER', '2024-01-01', N'Tiệc BBQ ngoài trời', 400000.00);
 
 -- Insert sample wellness services
-INSERT INTO Wellness_Services (hotel_id, category_id, service_name, description, base_price, duration_minutes, operating_hours, capacity) VALUES 
-    (1, 4, N'Massage thư giãn', N'Massage body toàn thân với tinh dầu thiên nhiên', 500000.00, 60, N'8:00-22:00', 5),
-    (1, 4, N'Spa mặt', N'Chăm sóc da mặt chuyên sâu', 300000.00, 45, N'9:00-21:00', 3),
-    (1, 4, N'Tắm bùn khoáng', N'Tắm bùn khoáng tự nhiên tốt cho da', 200000.00, 30, N'10:00-20:00', 8);
+INSERT INTO Wellness_Services (hotel_id, category_id, service_name, description, base_price, duration_minutes, operating_hours, capacity, image_url, status) VALUES
+(1, 4, N'Tắm bùn khoáng', N'Tắm bùn khoáng tự nhiên giúp làm mịn da, giảm đau nhức và thư giãn cơ thể.', 350000, 60, N'08:00–20:30', 10, N'Imagewellness/tambunkhoang.jpg', 'ACTIVE'),
+(1, 4, N'Massage toàn thân', N'Liệu pháp massage toàn thân chuyên nghiệp giúp giảm căng thẳng và cải thiện lưu thông máu.', 400000, 60, N'09:00–22:00', 6, N'Imagewellness/massagetoanthan.jpg', 'ACTIVE'),
+(1, 4, N'Xông hơi thảo dược', N'Xông hơi bằng thảo dược thiên nhiên giúp thải độc, tăng sức đề kháng và giảm stress.', 250000, 40, N'08:00–21:00', 8,N'Imagewellness/xonghoiithaoduoc.jpg', 'ACTIVE'),
+(1, 4, N'Gội đầu dưỡng sinh', N'Kết hợp massage đầu, vai, cổ giúp thư giãn và giảm đau mỏi.', 99000, 45, N'09:00–21:30', 5,N'Imagewellness/goidauduongsinh.jpg', 'ACTIVE'),
+(1, 4, N'Ngâm chân bằng muối khoáng', N'Ngâm chân với muối khoáng và tinh dầu, giúp giảm nhức mỏi và thư giãn cơ bắp.', 99000, 30, N'09:00–21:00', 6,N'Imagewellness/ngamchanbangmuoikhoang.jpg', 'ACTIVE'),
+(1, 4, N'Thuê xe đạp', N'Dịch vụ thuê xe đạp để di chuyển và tham quan quanh khu du lịch.', 99000, 120, N'06:00–18:00', 20, N'Imagewellness/thuexedap.jpg', 'ACTIVE'),
+(1, 4, N'Dịch vụ giặt ủi', N'Giặt, sấy và ủi quần áo cho khách lưu trú tại khu nghỉ dưỡng.', 99000, NULL, N'08:00–20:00', 5,N'Imagewellness/dichvugiatui.jpg', 'INACTIVE'),
+(1, 4, N'Tắm trắng sữa tươi', N'Tắm dưỡng trắng da bằng sữa tươi nguyên chất và yến mạch, an toàn và tự nhiên.', 300000, 45, N'09:00–20:00', 4,N'Imagewellness/tamtrangsuatuoi.jpg', 'ACTIVE'),
+(1, 4, N'Tắm khoáng nóng', N'Ngâm mình trong hồ khoáng nóng thiên nhiên giúp thư giãn, giảm stress và phục hồi năng lượng.', 320000, 50, N'07:00–21:00', 12,N'Imagewellness/tamkhoangnong.jpg', 'ACTIVE'),
+(1, 4, N'Tắm sữa ong chúa', N'Tắm dưỡng thể bằng hỗn hợp sữa ong chúa và thảo mộc, giúp da sáng và mềm mịn.', 99000, 60, N'09:00–20:30', 5,N'Imagewellness/tamsuaongchua.jpg', 'ACTIVE'),
+(1, 4, N'Chăm sóc da mặt', N'Liệu trình làm sạch, dưỡng ẩm và tái tạo da mặt bằng sản phẩm thiên nhiên.', 99000, 50, N'09:00–21:00', 4,N'Imagewellness/chamsocdamat.jpg', 'ACTIVE'),
+(1, 4, N'Tẩy tế bào chết toàn thân', N'Tẩy tế bào chết bằng muối biển và tinh dầu, giúp da sáng mịn và thông thoáng.', 280000, 40, N'09:00–21:00', 5,N'Imagewellness/taytebaochettoanthankhachsan.jpg', 'ACTIVE'),
+(1, 4, N'Xông hơi tinh dầu', N'Xông hơi với tinh dầu thiên nhiên giúp giảm stress, thư giãn và chăm sóc da.', 230000, 35, N'08:00–21:00', 6,N'Imagewellness/xonghoitinhdau.jpg', 'ACTIVE'),
+(1, 4, N'Tắm khoáng lạnh', N'Tắm khoáng lạnh giúp làm săn chắc da, tăng tuần hoàn máu và giảm mệt mỏi.', 250000, 40, N'08:00–19:30', 8, N'Imagewellness/tamkhoanglanh.jpg', 'ACTIVE'),
+(1, 4, N'Hồ bơi nước ấm trong nhà', N'Hồ bơi nước ấm trong nhà phù hợp thư giãn mọi thời tiết.', 150000, 90, N'06:00–21:00', 25,N'Imagewellness/hoboinuocamtrongnha.jpg', 'ACTIVE'),
+(1, 4, N'Phòng tập Gym', N'Phòng tập thể hình hiện đại với đầy đủ thiết bị cardio và tạ.', 120000, 60, N'06:00–22:00', 20,N'Imagewellness/phongtapgym.jpg', 'ACTIVE'),
+(1, 4, N'Cho thuê phao bơi', N'Dịch vụ cho thuê phao bơi và áo phao an toàn cho trẻ em và người lớn.', 50000, NULL, N'06:00–19:00', 50, N'Imagewellness/chothuephaoboi.jpg', 'INACTIVE'),
+(1, 4, N'Thuê xe máy', N'Dịch vụ thuê xe máy cho khách di chuyển tự do trong khu vực.', 200000, 240, N'06:00–22:00', 15,N'Imagewellness/thuexemay.jpg', 'ACTIVE'),
+(1, 4, N'Cà phê ngoài trời', N'Không gian cà phê ngoài trời thư giãn với tầm nhìn hướng núi hoặc biển.', 80000, 60, N'07:00–22:00', 40,N'Imagewellness/caphengoaitroi.jpg', 'INACTIVE'),
+(1, 4, N'Dịch vụ dọn phòng', N'Dọn dẹp, thay khăn và vệ sinh phòng hàng ngày cho khách lưu trú.', 99000, NULL, N'08:00–18:00', 10,N'Imagewellness/dichvudonphong.jpg', 'INACTIVE'),
+(1, 4, N'Cho thuê lều picnic', N'Thuê lều để cắm trại hoặc picnic ngoài trời cùng gia đình.', 99000, NULL, N'06:00–19:00', 10,N'Imagewellness/chothueleupicnic.jpg', 'INACTIVE'),
+(1, 4, N'Hồ bơi nước mặn ngoài trời', N'Hồ bơi ngoài trời sử dụng nước mặn nhân tạo, giúp thư giãn và tốt cho da.', 99000, 90, N'06:00–20:00', 40,N'Imagewellness/hoboinuocmanngoaitroi.jpg', 'ACTIVE'),
+(1, 4, N'Tắm nước hoa hồng', N'Tắm thư giãn với nước hoa hồng và tinh dầu tự nhiên, giúp da mềm mịn và thơm mát.', 99000, 45, N'09:00–20:00', 5,N'Imagewellness/tamnuochoahong.jpg', 'ACTIVE'),
+(1, 4, N'Massage chân bằng đá nóng', N'Massage chân kết hợp đá bóng nóng giúp kích thích huyệt đạo, giảm nhức mỏi.', 99000, 30, N'09:00–22:00', 6,N'Imagewellness/massagechanbangdanong.jpg', 'ACTIVE'),
+(1, 4, N'Lớp học Yoga', N'Lớp yoga ngoài trời giúp khởi động ngày mới, tăng cường sức khỏe và tinh thần.', 99000, 60, N'06:00–07:30', 20,N'Imagewellness/lophocyoga.jpg', 'ACTIVE');
+
+
+
 
 -- ===========================================
 -- TOUR SYSTEM TABLES
