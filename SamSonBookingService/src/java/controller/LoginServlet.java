@@ -38,8 +38,8 @@ public class LoginServlet extends HttpServlet {
     // Redirect URLs based on roles
     private static final String ADMIN_DASHBOARD = "/admin/dashboard.jsp";
     private static final String SERVICE_MANAGER_DASHBOARD = "/service-manager/dashboard.jsp";
-    private static final String HOTEL_MANAGER_DASHBOARD = "/hotel-manager/dashboard.jsp";
-    private static final String CUSTOMER_DASHBOARD = "/home";
+    private static final String HOTEL_MANAGER_DASHBOARD = "/hotel/list";
+    private static final String CUSTOMER_DASHBOARD = "/customer/dashboard.jsp";
     private static final String FRONT_OFFICE_DASHBOARD = "/front-office/dashboard.jsp";
     
     @Override
