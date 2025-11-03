@@ -1,4 +1,15 @@
 package dao;
+import entity.WellnessService;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import entity.WellnessService;
 import java.sql.*;
@@ -105,11 +116,11 @@ public class WellnessServiceDAO {
             ps.setString(4, ws.getDescription());
             ps.setDouble(5, ws.getBasePrice());
 
-            // duration_minutes: null nếu <=0
+           
             if (ws.getDurationMinutes() > 0) ps.setInt(6, ws.getDurationMinutes());
             else ps.setNull(6, Types.INTEGER);
 
-            // operating_hours: default "08:00–22:00" nếu rỗng
+            
             String hours = (ws.getOperatingHours() != null && !ws.getOperatingHours().isEmpty())
                     ? ws.getOperatingHours() : "08:00–22:00";
             ps.setString(7, hours);
