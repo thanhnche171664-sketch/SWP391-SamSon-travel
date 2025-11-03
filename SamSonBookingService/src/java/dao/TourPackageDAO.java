@@ -92,6 +92,11 @@ public class TourPackageDAO {
         }
         return packages;
     }
+
+    // Alias for API layer naming consistency
+    public List<TourPackage> getPackagesByTourId(int tourId) {
+        return getPackagesByTour(tourId);
+    }
     
     /**
      * Get package by ID
