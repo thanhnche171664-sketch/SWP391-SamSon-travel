@@ -9,7 +9,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,12 +42,11 @@ public class HotelDAO {
         "ORDER BY rating DESC";
     
     private static final String INSERT_HOTEL = 
-        "INSERT INTO Hotels (name, address, description, manager_id, rating, featured, " +
-        "amenities, check_in_time, check_out_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO Hotels (name, address, description, manager_id) " +
+        "VALUES (?, ?, ?, ?)";
     
     private static final String UPDATE_HOTEL = 
         "UPDATE Hotels SET name = ?, address = ?, description = ?, manager_id = ?, " +
-        "rating = ?, featured = ?, amenities = ?, check_in_time = ?, check_out_time = ?, " +
         "updated_at = GETDATE() WHERE id = ?";
     
     private static final String DELETE_HOTEL = 
@@ -56,6 +54,33 @@ public class HotelDAO {
     
     private static final String GET_HOTEL_COUNT = 
         "SELECT COUNT(*) FROM Hotels";
+    
+    private static final String GET_HOTELS_PAGINATED = 
+        "SELECT * FROM Hotels " +
+        "WHERE (@search IS NULL OR name LIKE @search OR address LIKE @search) " +
+        "AND (@managerId IS NULL OR manager_id = @managerId) " +
+        "ORDER BY created_at DESC " +
+        "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+    
+    private static final String COUNT_HOTELS_FILTERED = 
+        "SELECT COUNT(*) FROM Hotels " +
+        "WHERE (@search IS NULL OR name LIKE @search OR address LIKE @search) " +
+        "AND (@managerId IS NULL OR manager_id = @managerId)";
+    
+    private static final String CHECK_HOTEL_HAS_BOOKINGS = 
+        "SELECT COUNT(*) FROM Bookings WHERE hotel_id = ?";
+    
+    private static final String GET_HOTEL_BOOKINGS_COUNT = 
+        "SELECT COUNT(*) as total_bookings, " +
+        "SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_bookings, " +
+        "SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_bookings " +
+        "FROM Bookings WHERE hotel_id = ?";
+    
+    private static final String CHECK_HOTEL_HAS_TOUR_PACKAGES = 
+        "SELECT COUNT(*) FROM Tour_Packages WHERE hotel_id = ?";
+    
+    private static final String CHECK_HOTEL_HAS_ROOMS = 
+        "SELECT COUNT(*) FROM Rooms WHERE hotel_id = ?";
     
     /**
      * Get all hotels
@@ -182,11 +207,6 @@ public class HotelDAO {
             statement.setString(2, hotel.getAddress());
             statement.setString(3, hotel.getDescription());
             statement.setInt(4, hotel.getManagerId());
-            statement.setDouble(5, hotel.getRating());
-            statement.setBoolean(6, hotel.isFeatured());
-            statement.setString(7, hotel.getAmenities());
-            statement.setTime(8, hotel.getCheckInTime());
-            statement.setTime(9, hotel.getCheckOutTime());
             
             int rowsAffected = statement.executeUpdate();
             return rowsAffected > 0;
@@ -210,12 +230,7 @@ public class HotelDAO {
             statement.setString(2, hotel.getAddress());
             statement.setString(3, hotel.getDescription());
             statement.setInt(4, hotel.getManagerId());
-            statement.setDouble(5, hotel.getRating());
-            statement.setBoolean(6, hotel.isFeatured());
-            statement.setString(7, hotel.getAmenities());
-            statement.setTime(8, hotel.getCheckInTime());
-            statement.setTime(9, hotel.getCheckOutTime());
-            statement.setInt(10, hotel.getId());
+            statement.setInt(5, hotel.getId());
             
             int rowsAffected = statement.executeUpdate();
             return rowsAffected > 0;
@@ -265,6 +280,98 @@ public class HotelDAO {
     }
     
     /**
+     * Get hotels with pagination and search
+     * @param page Current page (1-based)
+     * @param pageSize Number of items per page
+     * @param searchKeyword Search keyword (can be null)
+     * @param managerId Manager ID filter (can be null for all)
+     * @return List of hotels
+     */
+    public List<Hotel> getHotelsPaginated(int page, int pageSize, String searchKeyword, Integer managerId) {
+        List<Hotel> hotels = new ArrayList<>();
+        String sql = "SELECT * FROM Hotels WHERE 1=1 ";
+        
+        if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+            sql += "AND (name LIKE ? OR address LIKE ?) ";
+        }
+        if (managerId != null) {
+            sql += "AND manager_id = ? ";
+        }
+        
+        sql += "ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            int paramIndex = 1;
+            
+            if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+                String searchPattern = "%" + searchKeyword + "%";
+                statement.setString(paramIndex++, searchPattern);
+                statement.setString(paramIndex++, searchPattern);
+            }
+            if (managerId != null) {
+                statement.setInt(paramIndex++, managerId);
+            }
+            
+            statement.setInt(paramIndex++, (page - 1) * pageSize);
+            statement.setInt(paramIndex, pageSize);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    hotels.add(mapResultSetToHotel(resultSet));
+                }
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error getting paginated hotels", e);
+        }
+        return hotels;
+    }
+    
+    /**
+     * Count hotels with filters
+     * @param searchKeyword Search keyword (can be null)
+     * @param managerId Manager ID filter (can be null)
+     * @return Total count
+     */
+    public int countHotelsFiltered(String searchKeyword, Integer managerId) {
+        String sql = "SELECT COUNT(*) FROM Hotels WHERE 1=1 ";
+        
+        if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+            sql += "AND (name LIKE ? OR address LIKE ?) ";
+        }
+        if (managerId != null) {
+            sql += "AND manager_id = ? ";
+        }
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            int paramIndex = 1;
+            
+            if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+                String searchPattern = "%" + searchKeyword + "%";
+                statement.setString(paramIndex++, searchPattern);
+                statement.setString(paramIndex++, searchPattern);
+            }
+            if (managerId != null) {
+                statement.setInt(paramIndex++, managerId);
+            }
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error counting filtered hotels", e);
+        }
+        return 0;
+    }
+    
+    /**
      * Map ResultSet to Hotel object
      * @param resultSet ResultSet from database query
      * @return Hotel object
@@ -277,13 +384,155 @@ public class HotelDAO {
         hotel.setAddress(resultSet.getString("address"));
         hotel.setDescription(resultSet.getString("description"));
         hotel.setManagerId(resultSet.getInt("manager_id"));
-        hotel.setRating(resultSet.getDouble("rating"));
-        hotel.setFeatured(resultSet.getBoolean("featured"));
-        hotel.setAmenities(resultSet.getString("amenities"));
-        hotel.setCheckInTime(resultSet.getTime("check_in_time"));
-        hotel.setCheckOutTime(resultSet.getTime("check_out_time"));
         hotel.setCreatedAt(resultSet.getDate("created_at"));
         hotel.setUpdatedAt(resultSet.getDate("updated_at"));
+        
         return hotel;
+    }
+    
+    /**
+     * Check if hotel has any bookings
+     * @param hotelId Hotel ID to check
+     * @return true if hotel has bookings, false otherwise
+     */
+    public boolean hasBookings(int hotelId) {
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(CHECK_HOTEL_HAS_BOOKINGS)) {
+            
+            statement.setInt(1, hotelId);
+            ResultSet resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                return resultSet.getInt(1) > 0;
+            }
+            return false;
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error checking hotel bookings: " + hotelId, e);
+            return false;
+        }
+    }
+    
+    /**
+     * Get detailed booking statistics for a hotel
+     * @param hotelId Hotel ID
+     * @return Array [total, confirmed, pending] or null if error
+     */
+    public int[] getHotelBookingsStats(int hotelId) {
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(GET_HOTEL_BOOKINGS_COUNT)) {
+            
+            statement.setInt(1, hotelId);
+            ResultSet resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                int[] stats = new int[3];
+                stats[0] = resultSet.getInt("total_bookings");
+                stats[1] = resultSet.getInt("confirmed_bookings");
+                stats[2] = resultSet.getInt("pending_bookings");
+                return stats;
+            }
+            return null;
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error getting hotel booking stats: " + hotelId, e);
+            return null;
+        }
+    }
+    
+    /**
+     * Get hotel by name and manager ID (for newly created hotel)
+     * @param name Hotel name
+     * @param managerId Manager ID
+     * @return Hotel object or null if not found
+     */
+    public Hotel getHotelByNameAndManagerId(String name, int managerId) {
+        String sql = "SELECT TOP 1 * FROM Hotels WHERE name = ? AND manager_id = ? ORDER BY created_at DESC";
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            
+            statement.setString(1, name);
+            statement.setInt(2, managerId);
+            ResultSet resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                return mapResultSetToHotel(resultSet);
+            }
+            return null;
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error getting hotel by name and manager ID", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Check if hotel has tour packages
+     * @param hotelId Hotel ID
+     * @return true if has tour packages, false otherwise
+     */
+    public boolean hasTourPackages(int hotelId) {
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(CHECK_HOTEL_HAS_TOUR_PACKAGES)) {
+            
+            statement.setInt(1, hotelId);
+            ResultSet resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                return resultSet.getInt(1) > 0;
+            }
+            return false;
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error checking hotel tour packages: " + hotelId, e);
+            return false;
+        }
+    }
+    
+    /**
+     * Get count of tour packages for a hotel
+     * @param hotelId Hotel ID
+     * @return Number of tour packages
+     */
+    public int getTourPackagesCount(int hotelId) {
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(CHECK_HOTEL_HAS_TOUR_PACKAGES)) {
+            
+            statement.setInt(1, hotelId);
+            ResultSet resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+            return 0;
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error getting tour packages count: " + hotelId, e);
+            return 0;
+        }
+    }
+    
+    /**
+     * Check if hotel has rooms
+     * @param hotelId Hotel ID
+     * @return true if has rooms, false otherwise
+     */
+    public boolean hasRooms(int hotelId) {
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(CHECK_HOTEL_HAS_ROOMS)) {
+            
+            statement.setInt(1, hotelId);
+            ResultSet resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                return resultSet.getInt(1) > 0;
+            }
+            return false;
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error checking hotel rooms: " + hotelId, e);
+            return false;
+        }
     }
 }
