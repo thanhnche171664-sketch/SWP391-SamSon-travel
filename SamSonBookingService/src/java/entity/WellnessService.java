@@ -13,16 +13,18 @@ public class WellnessService {
     private String serviceName;
     private String description;
     private double basePrice;
-    private Integer durationMinutes;
+    private int durationMinutes;
     private String operatingHours;
-    private Integer capacity;
+    private int capacity;
+    private String imageUrl;
     private String status;
     private Date createdAt;
     private Date updatedAt;
 
-    public WellnessService() {}
+    public WellnessService() {
+    }
 
-    public WellnessService(int wellnessId, int hotelId, int categoryId, String serviceName, String description, double basePrice, Integer durationMinutes, String operatingHours, Integer capacity, String status, Date createdAt, Date updatedAt) {
+    public WellnessService(int wellnessId, int hotelId, int categoryId, String serviceName, String description, double basePrice, int durationMinutes, String operatingHours, int capacity, String imageUrl, String status, Date createdAt, Date updatedAt) {
         this.wellnessId = wellnessId;
         this.hotelId = hotelId;
         this.categoryId = categoryId;
@@ -32,6 +34,7 @@ public class WellnessService {
         this.durationMinutes = durationMinutes;
         this.operatingHours = operatingHours;
         this.capacity = capacity;
+        this.imageUrl = imageUrl;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -85,11 +88,11 @@ public class WellnessService {
         this.basePrice = basePrice;
     }
 
-    public Integer getDurationMinutes() {
+    public int getDurationMinutes() {
         return durationMinutes;
     }
 
-    public void setDurationMinutes(Integer durationMinutes) {
+    public void setDurationMinutes(int durationMinutes) {
         this.durationMinutes = durationMinutes;
     }
 
@@ -101,12 +104,20 @@ public class WellnessService {
         this.operatingHours = operatingHours;
     }
 
-    public Integer getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(Integer capacity) {
+    public void setCapacity(int capacity) {
         this.capacity = capacity;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getStatus() {
@@ -132,6 +143,8 @@ public class WellnessService {
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
+    
 
+    
     
 }
