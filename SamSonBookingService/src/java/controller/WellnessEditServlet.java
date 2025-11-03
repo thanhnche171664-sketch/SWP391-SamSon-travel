@@ -63,6 +63,7 @@ public class WellnessEditServlet extends HttpServlet {
                 return;
             }
 
+
             String page = request.getParameter("page");
             String status = request.getParameter("status");
             if (page == null || page.isEmpty()) page = "1";
@@ -70,6 +71,7 @@ public class WellnessEditServlet extends HttpServlet {
 
             request.setAttribute("page", page);
             request.setAttribute("status", status);
+
             request.setAttribute("wellnessService", ws);
             request.getRequestDispatcher("wellness_edit.jsp").forward(request, response);
 

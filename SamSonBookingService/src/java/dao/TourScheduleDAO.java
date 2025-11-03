@@ -90,6 +90,11 @@ public class TourScheduleDAO {
         }
         return schedules;
     }
+
+    // Alias for API layer naming consistency
+    public List<TourSchedule> getSchedulesByTourId(int tourId) {
+        return getSchedulesByTour(tourId);
+    }
     
     /**
      * Get available schedules for a tour (with available slots)

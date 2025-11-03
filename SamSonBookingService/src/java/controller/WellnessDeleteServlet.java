@@ -130,3 +130,22 @@ public class WellnessDeleteServlet extends HttpServlet {
         }
     }    
 }
+
+        try {
+            int id = Integer.parseInt(request.getParameter("wellnessId"));
+            boolean deleted = dao.deleteWellnessService(id);
+
+            if (deleted) {
+                response.sendRedirect("wellness-service?action=list&message=deleted");
+            } else {
+                response.sendRedirect("wellness-service?action=list&error=deletefail");
+            }
+        } catch (NumberFormatException e) {
+            response.sendRedirect("wellness-service?action=list&error=invalidid");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("wellness-service?action=list&error=exception");
+        }
+    }
+}
+
