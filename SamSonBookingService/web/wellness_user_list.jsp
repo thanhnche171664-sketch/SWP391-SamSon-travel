@@ -77,13 +77,11 @@
         </div>
     </form>
 
-    <!-- 🧾 Danh sách dịch vụ -->
     <div class="row g-4">
         <c:forEach var="ws" items="${services}">
             <div class="col-md-4 col-sm-6">
                 <div class="card h-100">
 
-                    <!-- Ảnh dịch vụ -->
                     <c:choose>
                         <c:when test="${not empty ws.imageUrl}">
                             <img src="${pageContext.request.contextPath}/${ws.imageUrl}"
@@ -102,7 +100,6 @@
                         <p class="card-text text-muted">${ws.description}</p>
                         <p class="price">${ws.basePrice} đ</p>
 
-                        <!-- Nút thao tác -->
                         <div class="d-flex justify-content-between mt-3 gap-2">
                             <a href="${pageContext.request.contextPath}/wellness-detail?id=${ws.wellnessId}"
                                class="btn btn-view btn-sm w-50 text-center">
@@ -128,7 +125,7 @@
         </c:if>
     </div>
 
-    <!-- Phân trang -->
+    
     <c:if test="${totalPages > 1}">
         <nav aria-label="Page navigation" class="mt-5">
             <ul class="pagination justify-content-center">

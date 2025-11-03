@@ -18,30 +18,25 @@ import java.util.logging.Logger;
  */
 public class DBContext {
     
-    // Database configuration constants
-    private static final String SERVER_NAME = "localhost\\SQLEXPRESS";
+    
+    private static final String SERVER_NAME = "LAPTOP-KKBAAD4J";
     private static final String DATABASE_NAME = "booking_travel";
     private static final String PORT_NUMBER = "1433";
     private static final String USERNAME = "sa";
     private static final String PASSWORD = "123";
     
-    // Connection pool settings
     private static final int MAX_CONNECTIONS = 10;
     private static final int CONNECTION_TIMEOUT = 30;
     
-    // Connection string with SQL Server specific configurations
     private static final String CONNECTION_STRING = String.format(
         "jdbc:sqlserver://%s:%s;databaseName=%s;user=%s;password=%s;encrypt=true;trustServerCertificate=true;loginTimeout=30;",
         SERVER_NAME, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD
     );
     
-    // JDBC Driver class name
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     
-    // Logger for error tracking
     private static final Logger LOGGER = Logger.getLogger(DBContext.class.getName());
     
-    // Static block to load JDBC driver
     static {
         try {
             Class.forName(DRIVER_CLASS);

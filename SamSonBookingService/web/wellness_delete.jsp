@@ -10,19 +10,21 @@
 <body style="background-color:#f8fafc;">
 <div class="container mt-5">
     <div class="card p-4 shadow-lg rounded-4">
-        <h3 class="text-center text-danger mb-4"> Xóa Dịch vụ Wellness</h3>
+        <h3 class="text-center text-danger mb-4">Xóa Dịch vụ Wellness</h3>
 
         <p class="text-center mb-3">
-            Bạn có chắc chắn muốn xóa dịch vụ 
+            Bạn có chắc chắn muốn xóa dịch vụ
             <strong>"${wellnessService.serviceName}"</strong> không?
         </p>
         <p class="text-center text-muted">Thao tác này <strong>không thể hoàn tác</strong>.</p>
 
         <form method="post" action="${pageContext.request.contextPath}/wellness-delete">
             <input type="hidden" name="wellnessId" value="${wellnessService.wellnessId}" />
+            <input type="hidden" name="page" value="${page}" />
+            <input type="hidden" name="status" value="${status}" />
 
             <div class="d-flex justify-content-center gap-3 mt-4">
-                <a href="${pageContext.request.contextPath}/wellness-service?action=list" 
+                <a href="${pageContext.request.contextPath}/wellness-delete?cancel=true&status=${status}&page=${page}"
                    class="btn btn-secondary">⬅ Hủy</a>
                 <button type="submit" class="btn btn-danger px-4">Xóa</button>
             </div>

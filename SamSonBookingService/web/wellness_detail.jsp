@@ -11,7 +11,7 @@
 <body style="background-color:#f8fafc;">
 <div class="container mt-5">
     <div class="card shadow-lg p-4 rounded-4">
-        <h3 class="text-center text-info mb-4"> Thông tin chi tiết Dịch vụ Wellness</h3>
+        <h3 class="text-center text-info mb-4">💆‍♀️ Thông tin chi tiết Dịch vụ Wellness</h3>
 
         <div class="row">
             <div class="col-md-6">
