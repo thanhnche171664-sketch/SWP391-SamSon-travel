@@ -122,22 +122,6 @@
 
     <!-- Filter Mappings -->
     <filter>
-        <filter-name>CharacterEncodingFilter</filter-name>
-        <filter-class>filter.CharacterEncodingFilter</filter-class>
-        <init-param>
-            <param-name>encoding</param-name>
-            <param-value>UTF-8</param-value>
-        </init-param>
-        <init-param>
-            <param-name>force</param-name>
-            <param-value>true</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>CharacterEncodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    <filter>
         <filter-name>AuthFilter</filter-name>
         <filter-class>filter.AuthFilter</filter-class>
     </filter>
@@ -194,88 +178,6 @@
         <url-pattern>/upload-avatar</url-pattern>
     </filter-mapping>
 
-    <!-- Booking & Payment Servlets (explicit mapping in addition to @WebServlet for clarity) -->
-    <servlet>
-        <servlet-name>BookingSelectTourServlet</servlet-name>
-        <servlet-class>controller.BookingSelectTourServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BookingSelectTourServlet</servlet-name>
-        <url-pattern>/booking/select-tour</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BookingReviewServlet</servlet-name>
-        <servlet-class>controller.BookingReviewServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BookingReviewServlet</servlet-name>
-        <url-pattern>/booking/review</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BookingConfirmServlet</servlet-name>
-        <servlet-class>controller.BookingConfirmServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BookingConfirmServlet</servlet-name>
-        <url-pattern>/booking/confirm</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>PaymentQRServlet</servlet-name>
-        <servlet-class>controller.PaymentQRServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PaymentQRServlet</servlet-name>
-        <url-pattern>/payment/qr</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>PaymentCheckServlet</servlet-name>
-        <servlet-class>controller.PaymentCheckServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PaymentCheckServlet</servlet-name>
-        <url-pattern>/payment/check</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>PaymentManualConfirmServlet</servlet-name>
-        <servlet-class>controller.PaymentManualConfirmServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PaymentManualConfirmServlet</servlet-name>
-        <url-pattern>/payment/manual-confirm</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BookingSchedulesApiServlet</servlet-name>
-        <servlet-class>controller.BookingSchedulesApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BookingSchedulesApiServlet</servlet-name>
-        <url-pattern>/booking/api/schedules</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BookingPackagesApiServlet</servlet-name>
-        <servlet-class>controller.BookingPackagesApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BookingPackagesApiServlet</servlet-name>
-        <url-pattern>/booking/api/packages</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>PaymentAdminServlet</servlet-name>
-        <servlet-class>controller.PaymentAdminServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PaymentAdminServlet</servlet-name>
-        <url-pattern>/admin/payments</url-pattern>
-    </servlet-mapping>
-
     <!-- Error Pages -->
     <error-page>
         <error-code>404</error-code>
@@ -290,7 +192,26 @@
         <location>/error/500.jsp</location>
     </error-page>
 
-    <!-- Removed container security-constraint; using AuthFilter for access control -->
+    <!-- Security Constraints -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Protected Resources</web-resource-name>
+            <url-pattern>/admin/*</url-pattern>
+            <url-pattern>/service-manager/*</url-pattern>
+            <url-pattern>/hotel-manager/*</url-pattern>
+            <url-pattern>/customer/*</url-pattern>
+            <url-pattern>/front-office/*</url-pattern>
+            <url-pattern>/dashboard.jsp</url-pattern>
+            <url-pattern>/profile.jsp</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>Administrator</role-name>
+            <role-name>Service Manager</role-name>
+            <role-name>Hotel Manager</role-name>
+            <role-name>Customer</role-name>
+            <role-name>Front Office</role-name>
+        </auth-constraint>
+    </security-constraint>
 
     <!-- MIME Type Mappings -->
     <mime-mapping>

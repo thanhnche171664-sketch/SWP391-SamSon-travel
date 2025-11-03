@@ -6,7 +6,9 @@ package dao;
 
 import entity.Booking;
 import entity.BookingDetail;
-import entity.BookingItem;
+import entity.Hotel;
+import entity.TransportService;
+import entity.ServiceCategory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +34,8 @@ public class BookingDAO {
     
     private static final String GET_BOOKING_BY_ID = 
         "SELECT id, user_id, hotel_id, room_type, number_of_rooms, transport_id, " +
-        "transport_fee, subtotal, discount_total, tax_total, total_price, currency, " +
-        "booking_date, booking_source, created_by, status, created_at, updated_at, " +
-        "tour_id, schedule_id, package_id, guest_count, contact_name, contact_email, contact_phone, check_in_date, check_out_date " +
+        "transport_fee, total_price, booking_date, booking_source, created_by, " +
+        "status, created_at, updated_at " +
         "FROM bookings WHERE id = ?";
     
     private static final String GET_BOOKING_DETAILS = 
@@ -46,15 +47,6 @@ public class BookingDAO {
     
     private static final String GET_BOOKING_COUNT_BY_USER_ID = 
         "SELECT COUNT(*) FROM bookings WHERE user_id = ?";
-    
-    private static final String UPDATE_STATUS =
-        "UPDATE Bookings SET status = ?, updated_at = GETDATE() WHERE id = ?";
-
-    private static final String GET_PENDING_BOOKINGS =
-        "SELECT id, user_id, hotel_id, room_type, number_of_rooms, transport_id, transport_fee, " +
-        "subtotal, discount_total, tax_total, total_price, currency, booking_date, booking_source, created_by, status, created_at, updated_at, " +
-        "tour_id, schedule_id, package_id, guest_count, contact_name, contact_email, contact_phone, check_in_date, check_out_date " +
-        "FROM Bookings WHERE status = 'pending' ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
     
     /**
      * Get bookings by user ID with pagination
@@ -213,101 +205,18 @@ public class BookingDAO {
         Booking booking = new Booking();
         booking.setId(resultSet.getInt("id"));
         booking.setUserId(resultSet.getInt("user_id"));
-        int tourId = resultSet.getInt("tour_id"); booking.setTourId(resultSet.wasNull()? null : tourId);
-        int scheduleId = resultSet.getInt("schedule_id"); booking.setScheduleId(resultSet.wasNull()? null : scheduleId);
-        int packageId = resultSet.getInt("package_id"); booking.setPackageId(resultSet.wasNull()? null : packageId);
-        int guestCount = resultSet.getInt("guest_count"); booking.setGuestCount(resultSet.wasNull()? null : guestCount);
         booking.setHotelId(resultSet.getInt("hotel_id"));
         booking.setRoomType(resultSet.getString("room_type"));
         booking.setNumberOfRooms(resultSet.getInt("number_of_rooms"));
         booking.setTransportId(resultSet.getInt("transport_id"));
         booking.setTransportFee(resultSet.getDouble("transport_fee"));
-        double sb = resultSet.getDouble("subtotal"); booking.setSubtotal(resultSet.wasNull()? null : sb);
-        double dd = resultSet.getDouble("discount_total"); booking.setDiscountTotal(resultSet.wasNull()? null : dd);
-        double tt = resultSet.getDouble("tax_total"); booking.setTaxTotal(resultSet.wasNull()? null : tt);
         booking.setTotalPrice(resultSet.getDouble("total_price"));
-        booking.setCurrency(resultSet.getString("currency"));
         booking.setBookingDate(new Date(resultSet.getTimestamp("booking_date").getTime()));
         booking.setBookingSource(resultSet.getString("booking_source"));
         booking.setCreatedBy(resultSet.getInt("created_by"));
         booking.setStatus(resultSet.getString("status"));
         booking.setCreatedAt(new Date(resultSet.getTimestamp("created_at").getTime()));
         booking.setUpdatedAt(new Date(resultSet.getTimestamp("updated_at").getTime()));
-        booking.setContactName(resultSet.getString("contact_name"));
-        booking.setContactEmail(resultSet.getString("contact_email"));
-        booking.setContactPhone(resultSet.getString("contact_phone"));
-        java.sql.Date ci = resultSet.getDate("check_in_date"); if (ci != null) booking.setCheckInDate(new Date(ci.getTime()));
-        java.sql.Date co = resultSet.getDate("check_out_date"); if (co != null) booking.setCheckOutDate(new Date(co.getTime()));
         return booking;
-    }
-
-    // Create booking via stored procedure (preferred for atomic slot handling)
-    public Integer createBookingUsingSP(int userId, int tourId, int scheduleId, Integer packageId,
-                                        int guestCount,
-                                        String contactName, String contactEmail, String contactPhone,
-                                        double subtotal, double discountTotal, double taxTotal, double totalPrice,
-                                        String currency) {
-        String sql = "{ call dbo.sp_CreateTourBooking(?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
-        try (Connection connection = DBContext.getConnection();
-             java.sql.CallableStatement cs = connection.prepareCall(sql)) {
-            cs.setInt(1, userId);
-            cs.setInt(2, tourId);
-            cs.setInt(3, scheduleId);
-            if (packageId == null) cs.setNull(4, java.sql.Types.INTEGER); else cs.setInt(4, packageId);
-            cs.setInt(5, guestCount);
-            cs.setString(6, contactName);
-            cs.setString(7, contactEmail);
-            cs.setString(8, contactPhone);
-            cs.setDouble(9, subtotal);
-            cs.setDouble(10, discountTotal);
-            cs.setDouble(11, taxTotal);
-            cs.setDouble(12, totalPrice);
-            cs.setString(13, currency);
-            cs.registerOutParameter(14, java.sql.Types.INTEGER);
-            cs.execute();
-            return cs.getInt(14);
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error creating booking via SP", e);
-            return null;
-        }
-    }
-
-    // Load booking with items
-    public Booking getFullById(int bookingId) {
-        Booking b = getBookingById(bookingId);
-        if (b == null) return null;
-        BookingItemDAO itemDAO = new BookingItemDAO();
-        List<BookingItem> items = itemDAO.findByBookingId(bookingId);
-        b.setBookingItems(items);
-        List<BookingDetail> details = getBookingDetails(bookingId);
-        b.setBookingDetails(details);
-        return b;
-    }
-
-    public boolean updateStatus(int bookingId, String status) {
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement ps = connection.prepareStatement(UPDATE_STATUS)) {
-            ps.setString(1, status);
-            ps.setInt(2, bookingId);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error updating booking status", e);
-            return false;
-        }
-    }
-
-    public List<Booking> getPendingBookings(int offset, int limit) {
-        List<Booking> list = new ArrayList<>();
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement ps = connection.prepareStatement(GET_PENDING_BOOKINGS)) {
-            ps.setInt(1, offset);
-            ps.setInt(2, limit);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) list.add(mapResultSetToBooking(rs));
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error loading pending bookings", e);
-        }
-        return list;
     }
 }

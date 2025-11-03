@@ -820,20 +820,5 @@
     container-type: inline-size;
   }
   
-  @container (min-width: 400px) {
-    .tour-card {
-      display: flex;
-      flex-direction: row;
-    }
-    
-    .tour-card-image {
-      width: 40%;
-      height: auto;
-    }
-    
-    .tour-card-content {
-      width: 60%;
-    }
-  }
+ 
 }
-
