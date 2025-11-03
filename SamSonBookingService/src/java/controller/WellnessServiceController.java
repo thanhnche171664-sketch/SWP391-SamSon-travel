@@ -151,7 +151,6 @@ public class WellnessServiceController extends HttpServlet {
         }
     }
 
-
     private void editWellnessService(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int wellnessId = Integer.parseInt(request.getParameter("id"));

@@ -55,11 +55,8 @@ public class WellnessUserListServlet extends HttpServlet {
 
             int totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
 
-            
+
             request.setAttribute("services", services);
-            request.setAttribute("currentPage", page);
-            request.setAttribute("totalPages", totalPages);
-            request.setAttribute("pageSize", PAGE_SIZE);
 
             request.getRequestDispatcher("wellness_user_list.jsp").forward(request, response);
 

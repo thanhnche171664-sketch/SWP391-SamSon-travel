@@ -8,15 +8,18 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
+
 @WebServlet(name = "WellnessDeleteServlet", urlPatterns = {"/wellness-delete"})
 public class WellnessDeleteServlet extends HttpServlet {
 
   private final WellnessServiceDAO dao = new WellnessServiceDAO();
     private static final int DEFAULT_PAGE_SIZE = 10;
 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
 
         try {
             String cancel = request.getParameter("cancel");
@@ -49,6 +52,8 @@ public class WellnessDeleteServlet extends HttpServlet {
                 return;
             }
 
+
+        try {
             int id = Integer.parseInt(request.getParameter("id"));
             WellnessService ws = dao.getById(id);
 
@@ -58,26 +63,26 @@ public class WellnessDeleteServlet extends HttpServlet {
                 return;
             }
 
+
             String page = request.getParameter("page");
             String status = request.getParameter("status");
             if (page == null || page.isEmpty()) page = "1";
             if (status == null || status.isEmpty()) status = "all";
 
-            request.setAttribute("wellnessService", ws);
             request.setAttribute("page", page);
             request.setAttribute("status", status);
             request.getRequestDispatcher("wellness_delete.jsp").forward(request, response);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
-            request.getRequestDispatcher("error.jsp").forward(request, response);
-        }
-    }
+            request.setAttribute("wellnessService", ws);
+            request.getRequestDispatcher("wellness_delete.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "ID không hợp lệ!");
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
 
         try {
             int id = Integer.parseInt(request.getParameter("wellnessId"));
@@ -93,7 +98,6 @@ public class WellnessDeleteServlet extends HttpServlet {
             String statusFilter = request.getParameter("status");
             if (statusFilter == null || statusFilter.trim().isEmpty()) {
                 statusFilter = "all";
-            }
 
             boolean deleted = dao.deleteWellnessService(id);
 
@@ -130,3 +134,19 @@ public class WellnessDeleteServlet extends HttpServlet {
         }
     }    
 }
+
+        try {
+            int id = Integer.parseInt(request.getParameter("wellnessId"));
+            boolean deleted = dao.deleteWellnessService(id);
+
+            if (deleted) {
+                response.sendRedirect("wellness-service?action=list&message=deleted");
+            } else {
+                response.sendRedirect("wellness-service?action=list&error=deletefail");
+            }
+        } catch (NumberFormatException e) {
+            response.sendRedirect("wellness-service?action=list&error=invalidid");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("wellness-service?action=list&error=exception");
+        }

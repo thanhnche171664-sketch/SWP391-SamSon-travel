@@ -8,11 +8,13 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
+
 @WebServlet(name = "WellnessEditServlet", urlPatterns = {"/wellness-edit"})
 public class WellnessEditServlet extends HttpServlet {
 
     private WellnessServiceDAO dao;
     private static final int DEFAULT_PAGE_SIZE = 10;
+
 
     @Override
     public void init() throws ServletException {
@@ -26,7 +28,6 @@ public class WellnessEditServlet extends HttpServlet {
             String cancel = request.getParameter("cancel");
             if ("true".equalsIgnoreCase(cancel)) {
                 int page = 1;
-                String pageParam = request.getParameter("page");
                 if (pageParam != null && !pageParam.isEmpty()) {
                     try {
                         page = Integer.parseInt(pageParam);
@@ -54,10 +55,9 @@ public class WellnessEditServlet extends HttpServlet {
                 return;
             }
 
+
             int id = Integer.parseInt(request.getParameter("id"));
             WellnessService ws = dao.getById(id);
-
-            if (ws == null) {
                 request.setAttribute("error", "Không tìm thấy dịch vụ cần chỉnh sửa!");
                 request.getRequestDispatcher("error.jsp").forward(request, response);
                 return;
@@ -77,8 +77,6 @@ public class WellnessEditServlet extends HttpServlet {
             request.setAttribute("error", "ID không hợp lệ!");
             request.getRequestDispatcher("error.jsp").forward(request, response);
         } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
             request.getRequestDispatcher("error.jsp").forward(request, response);
         }
     }
@@ -89,7 +87,6 @@ public class WellnessEditServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
         boolean hasError = false;
-
         int page = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
@@ -102,8 +99,6 @@ public class WellnessEditServlet extends HttpServlet {
         if (statusFilter == null || statusFilter.trim().isEmpty()) {
             statusFilter = "all";
         }
-
-        try {
             int id = Integer.parseInt(request.getParameter("wellnessId"));
             String name = request.getParameter("serviceName");
             String description = request.getParameter("description");
@@ -243,6 +238,12 @@ public class WellnessEditServlet extends HttpServlet {
                 return;
             }
 
+            double basePrice = Double.parseDouble(request.getParameter("basePrice"));
+            int duration = Integer.parseInt(request.getParameter("durationMinutes"));
+            String operatingHours = request.getParameter("operatingHours");
+            int capacity = Integer.parseInt(request.getParameter("capacity"));
+            String status = request.getParameter("status");
+
             WellnessService ws = dao.getById(id);
             if (ws == null) {
                 request.setAttribute("error", "Không tìm thấy dịch vụ cần cập nhật!");
@@ -282,10 +283,19 @@ public class WellnessEditServlet extends HttpServlet {
                 request.getRequestDispatcher("wellness_edit.jsp").forward(request, response);
             }
 
+                response.sendRedirect("wellness-service?action=list&message=update_success");
+            } else {
+                request.setAttribute("error", "Cập nhật thất bại!");
+                request.setAttribute("wellnessService", ws);
+                request.getRequestDispatcher("wellness_edit.jsp").forward(request, response);
+            }
+
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Dữ liệu không hợp lệ! Vui lòng kiểm tra lại.");
+            request.getRequestDispatcher("error.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
             request.getRequestDispatcher("error.jsp").forward(request, response);
         }
     }
-}
