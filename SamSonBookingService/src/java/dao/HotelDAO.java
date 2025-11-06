@@ -383,7 +383,44 @@ public class HotelDAO {
         hotel.setName(resultSet.getString("name"));
         hotel.setAddress(resultSet.getString("address"));
         hotel.setDescription(resultSet.getString("description"));
-        hotel.setManagerId(resultSet.getInt("manager_id"));
+        
+        // Handle nullable manager_id
+        int managerId = resultSet.getInt("manager_id");
+        if (!resultSet.wasNull()) {
+            hotel.setManagerId(managerId);
+        }
+        
+        // Map additional fields if they exist
+        try {
+            hotel.setRating(resultSet.getDouble("rating"));
+        } catch (SQLException e) {
+            // Field may not exist in some queries
+        }
+        
+        try {
+            hotel.setFeatured(resultSet.getBoolean("featured"));
+        } catch (SQLException e) {
+            // Field may not exist in some queries
+        }
+        
+        try {
+            hotel.setAmenities(resultSet.getString("amenities"));
+        } catch (SQLException e) {
+            // Field may not exist in some queries
+        }
+        
+        try {
+            hotel.setCheckInTime(resultSet.getTime("check_in_time"));
+        } catch (SQLException e) {
+            // Field may not exist in some queries
+        }
+        
+        try {
+            hotel.setCheckOutTime(resultSet.getTime("check_out_time"));
+        } catch (SQLException e) {
+            // Field may not exist in some queries
+        }
+        
         hotel.setCreatedAt(resultSet.getDate("created_at"));
         hotel.setUpdatedAt(resultSet.getDate("updated_at"));
         

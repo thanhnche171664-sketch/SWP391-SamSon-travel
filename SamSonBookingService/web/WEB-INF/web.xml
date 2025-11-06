@@ -120,6 +120,15 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>HotelPublicListServlet</servlet-name>
+        <servlet-class>controller.HotelPublicListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HotelPublicListServlet</servlet-name>
+        <url-pattern>/hotels</url-pattern>
+    </servlet-mapping>
+
     <!-- Filter Mappings -->
     <filter>
         <filter-name>AuthFilter</filter-name>
