@@ -88,6 +88,7 @@ public class WellnessServiceDAO {
         return null;
     }
 
+    /** INSERT: ném RuntimeException nếu lỗi, log tham số, trả true nếu chèn được. */
     public boolean addWellnessService(WellnessService ws) {
         final String sql = """
             INSERT INTO Wellness_Services 
@@ -95,7 +96,6 @@ public class WellnessServiceDAO {
              duration_minutes, operating_hours, capacity, image_url, status, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())
             """;
-
 
         LOGGER.info(() -> "[INSERT Wellness_Services] hotel_id=" + ws.getHotelId()
                 + ", category_id=" + ws.getCategoryId()
@@ -153,6 +153,7 @@ public class WellnessServiceDAO {
         }
     }
 
+    /** UPDATE: ném RuntimeException nếu lỗi; trả true nếu cập nhật >0 dòng. */
     public boolean updateWellnessService(WellnessService ws) {
         final String sql = """
             if (ws.getDurationMinutes() > 0) {
