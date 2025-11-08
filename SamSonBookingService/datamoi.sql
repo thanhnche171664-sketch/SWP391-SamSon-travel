@@ -225,6 +225,7 @@ CREATE TABLE Tour_Media (
         ON DELETE SET NULL ON UPDATE CASCADE
 );
 
+
 -- ===========================================
 -- INSERT INITIAL DATA
 -- ===========================================
