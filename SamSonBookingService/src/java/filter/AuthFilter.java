@@ -105,18 +105,22 @@ public class AuthFilter implements Filter {
             return;
         }
         
-        // Check if accessing profile - all authenticated users can access
+        // Check if accessing profile or home - all authenticated users can access
         if (path.equals("/profile") || path.equals("/profile.jsp") || path.startsWith("/profile/") ||
-            path.equals("/update-profile") || path.equals("/change-password") || path.equals("/upload-avatar")) {
-            LOGGER.info("Profile access granted for authenticated user");
+            path.equals("/update-profile") || path.equals("/change-password") || path.equals("/upload-avatar") ||
+            path.equals("/home") || path.equals("/bookings") || path.startsWith("/bookings/") ||
+            path.startsWith("/admin/payments/")) {
+            LOGGER.info("Public authenticated access granted for: " + path);
             updateLastActivity(session);
             chain.doFilter(request, response);
             return;
         }
         
         // Check role-based access
-        if (!hasAccess(role.getRoleName(), path)) {
-            LOGGER.warning("Access denied for role " + role.getRoleName() + " to " + path);
+        String roleName = role.getRoleName();
+        LOGGER.info("Checking access for role: '" + roleName + "' to path: '" + path + "'");
+        if (!hasAccess(roleName, path)) {
+            LOGGER.warning("Access denied for role '" + roleName + "' to " + path);
             redirectToAccessDenied(httpRequest, httpResponse);
             return;
         }
@@ -146,10 +150,21 @@ public class AuthFilter implements Filter {
      * Check if user has access to the requested resource based on role
      */
     private boolean hasAccess(String roleName, String path) {
-        switch (roleName) {
-            case ADMIN_ROLE:
-                return true; // Admin has access to everything
-                
+        // Normalize role name for comparison
+        String normalizedRoleName = roleName != null ? roleName.trim() : "";
+        
+        LOGGER.info("hasAccess called with roleName: '" + normalizedRoleName + "', path: '" + path + "'");
+        LOGGER.info("ADMIN_ROLE constant: '" + ADMIN_ROLE + "'");
+        LOGGER.info("Equals check: " + ADMIN_ROLE.equals(normalizedRoleName));
+        LOGGER.info("EqualsIgnoreCase check: " + ADMIN_ROLE.equalsIgnoreCase(normalizedRoleName));
+        
+        // Admin has access to everything
+        if (ADMIN_ROLE.equalsIgnoreCase(normalizedRoleName)) {
+            LOGGER.info("Admin access granted");
+            return true;
+        }
+        
+        switch (normalizedRoleName) {
             case SERVICE_MANAGER_ROLE:
                 return path.startsWith("/service-manager/") || 
                        path.startsWith("/customer/") ||
@@ -181,6 +196,7 @@ public class AuthFilter implements Filter {
                        path.equals("/profile") ||
                        path.startsWith("/profile/") ||
                        path.startsWith("/booking/") ||
+                       path.startsWith("/bookings/") ||
                        path.startsWith("/payment/");
                        
             default:

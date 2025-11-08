@@ -50,7 +50,7 @@ public class EmailUtil {
         
         try {
             // Create verification link
-            String verificationLink = "http://localhost:9999/SamSonBookingService/verify-email?token=" + token;
+            String verificationLink = "http://localhost:9999/SWP/verify-email?token=" + token;
             
             // Email subject and content
             String subject = "Xác nhận tài khoản - SamSon Travel";
@@ -92,7 +92,7 @@ public class EmailUtil {
         
         try {
             // Create reset link
-            String resetLink = "http://localhost:9999/SamSonBookingService/reset-password?token=" + token;
+            String resetLink = "http://localhost:9999/SWP/reset-password?token=" + token;
             
             // Email subject and content
             String subject = "Đặt lại mật khẩu - SamSon Travel";
@@ -329,7 +329,7 @@ public class EmailUtil {
                             <li>Nhận thông báo về các tour mới</li>
                         </ul>
                         <p style="text-align: center;">
-                            <a href="http://localhost:9999/SamSonBookingService/login" class="button">Đăng nhập ngay</a>
+                            <a href="http://localhost:9999/SWP/login" class="button">Đăng nhập ngay</a>
                         </p>
                         <p>Cảm ơn bạn đã tin tưởng và lựa chọn <strong>SamSon Travel</strong>!</p>
                     </div>
