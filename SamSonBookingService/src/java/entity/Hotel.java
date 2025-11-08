@@ -16,6 +16,7 @@ public class Hotel {
     private double rating;
     private boolean featured;
     private String amenities;
+    private String imageUrl;
     private Time checkInTime;
     private Time checkOutTime;
     private Date createdAt;
@@ -102,6 +103,14 @@ public class Hotel {
 
     public void setAmenities(String amenities) {
         this.amenities = amenities;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public Time getCheckInTime() {

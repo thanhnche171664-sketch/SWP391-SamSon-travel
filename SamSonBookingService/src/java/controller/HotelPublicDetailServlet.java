@@ -75,29 +75,23 @@ public class HotelPublicDetailServlet extends HttpServlet {
                     return;
                 }
                 
-                // Load all images for hotel
-                List<Image> hotelImages = imageDAO.getImagesByEntity("hotel", hotelId);
-                Image primaryImage = imageDAO.getPrimaryImage("hotel", hotelId);
-                if (primaryImage == null && !hotelImages.isEmpty()) {
-                    primaryImage = hotelImages.get(0);
-                }
-                
                 // Load rooms for hotel
                 List<Room> rooms = roomDAO.getRoomsByHotelId(hotelId);
                 
-                // Load images for each room
+                // Load images for each room (if needed)
                 Map<Integer, List<Image>> roomImagesMap = new HashMap<>();
                 for (Room room : rooms) {
                     List<Image> roomImages = imageDAO.getImagesByEntity("room", room.getId());
                     roomImagesMap.put(room.getId(), roomImages);
                 }
                 
+                // Debug: Log hotel image URL
+                LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + ", ImageUrl: " + hotel.getImageUrl());
+                
                 // Set request attributes
                 request.setAttribute("currentUser", currentUser);
                 request.setAttribute("userRole", userRole);
                 request.setAttribute("hotel", hotel);
-                request.setAttribute("hotelImages", hotelImages);
-                request.setAttribute("primaryImage", primaryImage);
                 request.setAttribute("rooms", rooms);
                 request.setAttribute("roomImagesMap", roomImagesMap);
                 
