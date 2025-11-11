@@ -13,6 +13,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +35,22 @@ public class BookingReviewServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Clear previous booking session data
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute("booking_hotel");
+            session.removeAttribute("booking_room_type");
+            session.removeAttribute("booking_number_of_rooms");
+            session.removeAttribute("booking_num_adults");
+            session.removeAttribute("booking_num_children");
+            session.removeAttribute("booking_check_in_date");
+            session.removeAttribute("booking_check_out_date");
+            session.removeAttribute("booking_meal_ids");
+            session.removeAttribute("booking_meal_qtys");
+            session.removeAttribute("booking_wellness_ids");
+            session.removeAttribute("booking_wellness_qtys");
+        }
 
         String hotelParam = request.getParameter("hotel");
         String roomType = request.getParameter("room_type");

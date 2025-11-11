@@ -336,6 +336,58 @@
             margin-top: 20px;
         }
         
+        .back-btn {
+            width: 100%;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(149, 165, 166, 0.4);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .back-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(149, 165, 166, 0.5);
+        }
+        
+        .back-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
         .submit-btn::before {
             content: '';
             position: absolute;
@@ -498,33 +550,60 @@
                     <div class="total-amount"><fmt:formatNumber value="${total}" pattern="#,###" />₫</div>
                 </div>
                 
-                <form id="confirmForm" method="post" action="${pageContext.request.contextPath}/bookings/confirm">
-                    <input type="hidden" name="hotel" value="${hotel.id}" />
-                    <input type="hidden" name="room_type" value="${roomType}" />
-                    <input type="hidden" name="number_of_rooms" value="${numberOfRooms}" />
-                    <input type="hidden" name="num_adults" value="${numAdults}" />
-                    <input type="hidden" name="num_children" value="${numChildren}" />
-                    <input type="hidden" name="check_in_date" value="<fmt:formatDate value="${checkIn}" pattern="yyyy-MM-dd" />" />
-                    <input type="hidden" name="check_out_date" value="<fmt:formatDate value="${checkOut}" pattern="yyyy-MM-dd" />" />
-                    <input type="hidden" name="total" value="${total}" />
-                    <input type="hidden" name="booking_code" value="${bookingCode}" />
-                    <c:if test="${not empty chosenMeals and fn:length(chosenMeals) > 0}">
-                        <c:forEach var="i" begin="0" end="${fn:length(chosenMeals)-1}">
-                            <input type="hidden" name="meal_id" value="${chosenMeals[i].mealId}" />
-                            <input type="hidden" name="meal_qty" value="${chosenMealQtys[i]}" />
-                        </c:forEach>
-                    </c:if>
-                    <c:if test="${not empty chosenWellness and fn:length(chosenWellness) > 0}">
-                        <c:forEach var="i" begin="0" end="${fn:length(chosenWellness)-1}">
-                            <input type="hidden" name="wellness_id" value="${chosenWellness[i].wellnessId}" />
-                            <input type="hidden" name="wellness_qty" value="${chosenWellnessQtys[i]}" />
-                        </c:forEach>
-                    </c:if>
-                    <button type="submit" class="submit-btn" id="confirmBtn" onclick="this.classList.add('loading')">
-                        <span class="text">✅ Xác nhận đặt phòng</span>
-                        <span class="loading">⏳</span>
-                    </button>
-                </form>
+                <div class="button-group">
+                    <form id="backForm" method="post" action="${pageContext.request.contextPath}/bookings/back">
+                        <input type="hidden" name="hotel" value="${hotel.id}" />
+                        <input type="hidden" name="room_type" value="${roomType}" />
+                        <input type="hidden" name="number_of_rooms" value="${numberOfRooms}" />
+                        <input type="hidden" name="num_adults" value="${numAdults}" />
+                        <input type="hidden" name="num_children" value="${numChildren}" />
+                        <input type="hidden" name="check_in_date" value="<fmt:formatDate value="${checkIn}" pattern="yyyy-MM-dd" />" />
+                        <input type="hidden" name="check_out_date" value="<fmt:formatDate value="${checkOut}" pattern="yyyy-MM-dd" />" />
+                        <c:if test="${not empty chosenMeals and fn:length(chosenMeals) > 0}">
+                            <c:forEach var="i" begin="0" end="${fn:length(chosenMeals)-1}">
+                                <input type="hidden" name="meal_id" value="${chosenMeals[i].mealId}" />
+                                <input type="hidden" name="meal_qty" value="${chosenMealQtys[i]}" />
+                            </c:forEach>
+                        </c:if>
+                        <c:if test="${not empty chosenWellness and fn:length(chosenWellness) > 0}">
+                            <c:forEach var="i" begin="0" end="${fn:length(chosenWellness)-1}">
+                                <input type="hidden" name="wellness_id" value="${chosenWellness[i].wellnessId}" />
+                                <input type="hidden" name="wellness_qty" value="${chosenWellnessQtys[i]}" />
+                            </c:forEach>
+                        </c:if>
+                        <button type="submit" class="back-btn">
+                            ← Quay lại để chỉnh sửa
+                        </button>
+                    </form>
+                    
+                    <form id="confirmForm" method="post" action="${pageContext.request.contextPath}/bookings/confirm">
+                        <input type="hidden" name="hotel" value="${hotel.id}" />
+                        <input type="hidden" name="room_type" value="${roomType}" />
+                        <input type="hidden" name="number_of_rooms" value="${numberOfRooms}" />
+                        <input type="hidden" name="num_adults" value="${numAdults}" />
+                        <input type="hidden" name="num_children" value="${numChildren}" />
+                        <input type="hidden" name="check_in_date" value="<fmt:formatDate value="${checkIn}" pattern="yyyy-MM-dd" />" />
+                        <input type="hidden" name="check_out_date" value="<fmt:formatDate value="${checkOut}" pattern="yyyy-MM-dd" />" />
+                        <input type="hidden" name="total" value="${total}" />
+                        <input type="hidden" name="booking_code" value="${bookingCode}" />
+                        <c:if test="${not empty chosenMeals and fn:length(chosenMeals) > 0}">
+                            <c:forEach var="i" begin="0" end="${fn:length(chosenMeals)-1}">
+                                <input type="hidden" name="meal_id" value="${chosenMeals[i].mealId}" />
+                                <input type="hidden" name="meal_qty" value="${chosenMealQtys[i]}" />
+                            </c:forEach>
+                        </c:if>
+                        <c:if test="${not empty chosenWellness and fn:length(chosenWellness) > 0}">
+                            <c:forEach var="i" begin="0" end="${fn:length(chosenWellness)-1}">
+                                <input type="hidden" name="wellness_id" value="${chosenWellness[i].wellnessId}" />
+                                <input type="hidden" name="wellness_qty" value="${chosenWellnessQtys[i]}" />
+                            </c:forEach>
+                        </c:if>
+                        <button type="submit" class="submit-btn" id="confirmBtn" onclick="this.classList.add('loading')">
+                            <span class="text">✅ Xác nhận đặt phòng</span>
+                            <span class="loading">⏳</span>
+                        </button>
+                    </form>
+                </div>
             </div>
             
             <div class="card qr-section">
