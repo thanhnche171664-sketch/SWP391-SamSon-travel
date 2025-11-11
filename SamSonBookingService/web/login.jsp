@@ -225,6 +225,7 @@
         </form>
         
         <div class="register-link">
+            <p><a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a></p>
             <p>Chưa có tài khoản? <a href="${pageContext.request.contextPath}/register">Đăng ký ngay</a></p>
         </div>
     </div>
