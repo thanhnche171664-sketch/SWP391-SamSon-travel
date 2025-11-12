@@ -41,12 +41,26 @@ public class BookingDAO {
     private static final String GET_BOOKING_DETAILS = 
         "SELECT bd.id, bd.booking_id, bd.category_id, bd.quantity, bd.price, " +
         "sc.category_name " +
-        "FROM booking_details bd " +
-        "INNER JOIN service_categories sc ON bd.category_id = sc.category_id " +
+        "FROM Booking_Details bd " +
+        "INNER JOIN ServiceCategories sc ON bd.category_id = sc.category_id " +
         "WHERE bd.booking_id = ?";
     
     private static final String GET_BOOKING_COUNT_BY_USER_ID = 
         "SELECT COUNT(*) FROM bookings WHERE user_id = ?";
+
+    private static final String SUM_OVERLAP_BOOKED_ROOMS =
+        "SELECT ISNULL(SUM(number_of_rooms),0) AS sum_rooms " +
+        "FROM Bookings " +
+        "WHERE hotel_id = ? AND room_type = ? " +
+        "AND status IN ('pending','confirmed') " +
+        "AND NOT (check_out_date <= ? OR check_in_date >= ?)";
+
+    private static final String INSERT_BOOKING =
+        "INSERT INTO Bookings (user_id, hotel_id, room_type, number_of_rooms, transport_id, transport_fee, total_price, booking_date, booking_source, created_by, status, check_in_date, check_out_date, num_adults, num_children, booking_code, created_at, updated_at) " +
+        "VALUES (?, ?, ?, ?, NULL, 0, ?, GETDATE(), 'ONLINE', ?, 'pending', ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+
+    private static final String INSERT_ADDON =
+        "INSERT INTO Booking_Addons (booking_id, addon_type, reference_id, name, unit_price, quantity) VALUES (?,?,?,?,?,?)";
     
     /**
      * Get bookings by user ID with pagination
@@ -218,5 +232,111 @@ public class BookingDAO {
         booking.setCreatedAt(new Date(resultSet.getTimestamp("created_at").getTime()));
         booking.setUpdatedAt(new Date(resultSet.getTimestamp("updated_at").getTime()));
         return booking;
+    }
+
+    public int sumBookedRooms(int hotelId, String roomType, java.time.LocalDate checkIn, java.time.LocalDate checkOut) {
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SUM_OVERLAP_BOOKED_ROOMS)) {
+            statement.setInt(1, hotelId);
+            statement.setString(2, roomType);
+            statement.setDate(3, java.sql.Date.valueOf(checkIn));
+            statement.setDate(4, java.sql.Date.valueOf(checkOut));
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error summing booked rooms", e);
+        }
+        return 0;
+    }
+
+    public int createBookingTransactional(Booking booking,
+                                          String bookingCode,
+                                          java.time.LocalDate checkIn,
+                                          java.time.LocalDate checkOut,
+                                          int numAdults,
+                                          int numChildren,
+                                          List<entity.BookingDetail> addons,
+                                          java.util.Map<Integer, String> addonNames) {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_BOOKING, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setObject(1, booking.getUserId());
+                ps.setObject(2, booking.getHotelId());
+                ps.setString(3, booking.getRoomType());
+                ps.setInt(4, booking.getNumberOfRooms());
+                ps.setDouble(5, booking.getTotalPrice());
+                ps.setObject(6, booking.getCreatedBy());
+                ps.setDate(7, java.sql.Date.valueOf(checkIn));
+                ps.setDate(8, java.sql.Date.valueOf(checkOut));
+                ps.setInt(9, numAdults);
+                ps.setInt(10, numChildren);
+                ps.setString(11, bookingCode);
+                int affected = ps.executeUpdate();
+                if (affected == 0) throw new SQLException("Insert booking failed");
+
+                int bookingId;
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) bookingId = keys.getInt(1); else throw new SQLException("No booking id");
+                }
+
+                if (addons != null && !addons.isEmpty()) {
+                    try (PreparedStatement psAddon = conn.prepareStatement(INSERT_ADDON)) {
+                        for (entity.BookingDetail ad : addons) {
+                            psAddon.setInt(1, bookingId);
+                            // categoryName carries addon_type (MEAL or WELLNESS)
+                            psAddon.setString(2, ad.getCategoryName());
+                            // categoryId carries reference_id (meal_id or wellness_id)
+                            psAddon.setInt(3, ad.getCategoryId());
+                            // Get name from map if provided, otherwise use default
+                            String addonName = "";
+                            if (addonNames != null && addonNames.containsKey(ad.getCategoryId())) {
+                                addonName = addonNames.get(ad.getCategoryId());
+                            } else {
+                                // Fallback to default name
+                                addonName = ad.getCategoryName().equals("MEAL") ? 
+                                    "Meal Service #" + ad.getCategoryId() : 
+                                    "Wellness Service #" + ad.getCategoryId();
+                            }
+                            psAddon.setString(4, addonName);
+                            psAddon.setDouble(5, ad.getPrice());
+                            psAddon.setInt(6, ad.getQuantity());
+                            psAddon.addBatch();
+                        }
+                        psAddon.executeBatch();
+                    }
+                }
+
+                // Insert payment pending with description
+                String insertPayment = "INSERT INTO Payments (booking_id, transaction_id, currency, payment_method, payment_date, amount, status, description) VALUES (?,?,?,?,GETDATE(),?,?,?)";
+                try (PreparedStatement psPay = conn.prepareStatement(insertPayment)) {
+                    psPay.setInt(1, bookingId);
+                    psPay.setString(2, null);
+                    psPay.setString(3, "VND");
+                    psPay.setString(4, "CASH");
+                    psPay.setDouble(5, booking.getTotalPrice());
+                    psPay.setString(6, "PENDING");
+                    psPay.setString(7, "BOOK-" + bookingCode);
+                    psPay.executeUpdate();
+                }
+
+                conn.commit();
+                return bookingId;
+            }
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
+            LOGGER.log(Level.SEVERE, "Error creating booking transactionally", e);
+            return -1;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
+            }
+        }
     }
 }

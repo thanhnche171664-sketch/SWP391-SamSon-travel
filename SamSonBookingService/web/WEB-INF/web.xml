@@ -35,6 +35,28 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>ForgotPasswordRequestServlet</servlet-name>
+        <servlet-class>controller.ForgotPasswordRequestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ForgotPasswordRequestServlet</servlet-name>
+        <url-pattern>/forgot-password</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ForgotPasswordRequestServlet</servlet-name>
+        <url-pattern>/forgot-password/request</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ResetPasswordServlet</servlet-name>
+        <servlet-class>controller.ResetPasswordServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ResetPasswordServlet</servlet-name>
+        <url-pattern>/reset-password</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>RegisterServlet</servlet-name>
         <servlet-class>controller.RegisterServlet</servlet-class>
     </servlet>
@@ -120,6 +142,15 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>HotelPublicListServlet</servlet-name>
+        <servlet-class>controller.HotelPublicListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HotelPublicListServlet</servlet-name>
+        <url-pattern>/hotels</url-pattern>
+    </servlet-mapping>
+
     <!-- Filter Mappings -->
     <filter>
         <filter-name>AuthFilter</filter-name>
@@ -155,7 +186,7 @@
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthFilter</filter-name>
-        <url-pattern>/booking/*</url-pattern>
+        <url-pattern>/bookings/*</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthFilter</filter-name>
@@ -192,11 +223,30 @@
         <location>/error/500.jsp</location>
     </error-page>
 
+    <!-- Security Roles -->
+    <security-role>
+        <role-name>Administrator</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Service Manager</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Hotel Manager</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Customer</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Front Office</role-name>
+    </security-role>
+
     <!-- Security Constraints -->
+    <!-- Note: We use custom AuthFilter for authentication, not Tomcat's security realm -->
+    <!-- This security-constraint is kept for documentation but may cause 403 errors -->
+    <!-- If you see 403 errors, you may need to configure Tomcat's security realm or remove this constraint -->
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Protected Resources</web-resource-name>
-            <url-pattern>/admin/*</url-pattern>
             <url-pattern>/service-manager/*</url-pattern>
             <url-pattern>/hotel-manager/*</url-pattern>
             <url-pattern>/customer/*</url-pattern>
@@ -212,6 +262,8 @@
             <role-name>Front Office</role-name>
         </auth-constraint>
     </security-constraint>
+    <!-- Admin paths are handled by AuthFilter, not security-constraint -->
+    <!-- This prevents 403 errors from Tomcat's security realm -->
 
     <!-- MIME Type Mappings -->
     <mime-mapping>

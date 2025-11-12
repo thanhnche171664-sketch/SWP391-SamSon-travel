@@ -51,7 +51,9 @@ public class ImageDAO extends DBContext {
      * @return Primary image hoặc null
      */
     public Image getPrimaryImage(String entityType, int entityId) {
-        String sql = "SELECT TOP 1 * FROM Images WHERE entity_type = ? AND entity_id = ? AND is_primary = 1";
+        // Ưu tiên external URLs (https://), nếu không có thì lấy local
+        String sql = "SELECT TOP 1 * FROM Images WHERE entity_type = ? AND entity_id = ? AND is_primary = 1 " +
+                     "ORDER BY CASE WHEN image_url LIKE 'http://%' OR image_url LIKE 'https://%' THEN 0 ELSE 1 END, id DESC";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -76,7 +78,9 @@ public class ImageDAO extends DBContext {
      * @return First image hoặc null
      */
     public Image getFirstImage(String entityType, int entityId) {
-        String sql = "SELECT TOP 1 * FROM Images WHERE entity_type = ? AND entity_id = ? ORDER BY display_order, id";
+        // Ưu tiên external URLs (https://), nếu không có thì lấy local
+        String sql = "SELECT TOP 1 * FROM Images WHERE entity_type = ? AND entity_id = ? " +
+                     "ORDER BY CASE WHEN image_url LIKE 'http://%' OR image_url LIKE 'https://%' THEN 0 ELSE 1 END, display_order, id DESC";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
