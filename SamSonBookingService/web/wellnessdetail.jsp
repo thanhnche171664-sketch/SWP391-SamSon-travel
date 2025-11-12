@@ -71,7 +71,7 @@
                 </ul>
 
                 <div class="mt-4">
-                    <a href="wellness-list" class="btn btn-back">← Quay lại danh sách</a>
+                    <a href="user-wellness" class="btn btn-back">← Quay lại danh sách</a>
                 </div>
             </div>
         </div>

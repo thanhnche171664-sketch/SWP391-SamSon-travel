@@ -48,14 +48,12 @@ public class WellnessUserListServlet extends HttpServlet {
                 totalRecords = dao.countSearch(kw, statusFilter);
                 request.setAttribute("keyword", kw);
             } else {
-                // lấy toàn bộ active
                 services = dao.getAll(page, PAGE_SIZE, statusFilter);
                 totalRecords = dao.countAll(statusFilter);
             }
 
             int totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
 
-            // set lên JSP
             request.setAttribute("services", services);
             request.setAttribute("currentPage", page);
             request.setAttribute("totalPages", totalPages);
