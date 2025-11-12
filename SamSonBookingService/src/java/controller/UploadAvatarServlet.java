@@ -76,8 +76,10 @@ public class UploadAvatarServlet extends HttpServlet {
                 return;
             }
             
-            // Get upload path
-            String contextPath = request.getServletContext().getRealPath("");
+            // Get upload path - lưu vào web/uploads để không bị mất khi clean build
+            String realPath = request.getServletContext().getRealPath("/");
+            // Chuyển từ build/web sang web (source directory)
+            String contextPath = realPath.replace("build" + java.io.File.separator + "web", "web");
             String uploadPath = contextPath + UPLOAD_DIR;
             
             // Ensure upload directory exists
@@ -150,13 +152,6 @@ public class UploadAvatarServlet extends HttpServlet {
         out.flush();
     }
 }
-
-
-
-
-
-
-
 
 
 

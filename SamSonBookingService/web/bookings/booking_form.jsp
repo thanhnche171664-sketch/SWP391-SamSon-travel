@@ -116,7 +116,6 @@
         .price-summary {
             position: sticky;
             top: 20px;
-            z-index: 1000;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px;
@@ -473,13 +472,13 @@
                     <div class="form-group">
                         <label>Ngày nhận phòng</label>
                         <input type="date" name="check_in_date" id="checkInDate" required 
-                               min="" value="${sessionScope.booking_check_in_date}" onchange="updateCheckOutMin()" />
+                               min="" onchange="updateCheckOutMin()" />
                         <div class="error-message">Vui lòng chọn ngày nhận phòng</div>
                     </div>
                     <div class="form-group">
                         <label>Ngày trả phòng</label>
                         <input type="date" name="check_out_date" id="checkOutDate" required 
-                               min="" value="${sessionScope.booking_check_out_date}" onchange="calculatePrice()" />
+                               min="" onchange="calculatePrice()" />
                         <div class="error-message">Vui lòng chọn ngày trả phòng</div>
                     </div>
                 </div>
@@ -492,8 +491,7 @@
                         <label>Loại phòng</label>
                         <select name="room_type" id="roomType" required onchange="calculatePrice()">
                             <c:forEach var="r" items="${rooms}">
-                                <option value="${r.roomType}" data-price="${r.price}" 
-                                        ${sessionScope.booking_room_type == r.roomType ? 'selected' : ''}>
+                                <option value="${r.roomType}" data-price="${r.price}">
                                     ${r.roomType} - <fmt:formatNumber value="${r.price}" pattern="#,###" />₫/đêm
                                 </option>
                             </c:forEach>
@@ -501,9 +499,7 @@
                     </div>
                     <div class="form-group">
                         <label>Số phòng</label>
-                        <input type="number" min="1" name="number_of_rooms" id="numberOfRooms" 
-                               value="${sessionScope.booking_number_of_rooms != null ? sessionScope.booking_number_of_rooms : '1'}" 
-                               required onchange="calculatePrice()" />
+                        <input type="number" min="1" name="number_of_rooms" id="numberOfRooms" value="1" required onchange="calculatePrice()" />
                     </div>
                 </div>
             </div>
@@ -513,13 +509,11 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Người lớn</label>
-                        <input type="number" min="1" name="num_adults" id="numAdults"
-                               value="${sessionScope.booking_num_adults != null ? sessionScope.booking_num_adults : '1'}" required />
+                        <input type="number" min="1" name="num_adults" value="1" required />
                     </div>
                     <div class="form-group">
                         <label>Trẻ em</label>
-                        <input type="number" min="0" name="num_children" id="numChildren"
-                               value="${sessionScope.booking_num_children != null ? sessionScope.booking_num_children : '0'}" required />
+                        <input type="number" min="0" name="num_children" value="0" required />
                     </div>
                 </div>
             </div>
@@ -577,52 +571,8 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('checkInDate').min = today;
             document.getElementById('checkOutDate').min = today;
-            
-            // Restore booking data from session
-            restoreBookingData();
-            
             calculatePrice();
         });
-        
-        function restoreBookingData() {
-            // Restore meal services
-            <c:if test="${not empty sessionScope.booking_meal_ids and not empty sessionScope.booking_meal_qtys}">
-                <c:forEach var="mealId" items="${sessionScope.booking_meal_ids}" varStatus="mealLoop">
-                    <c:set var="mealQty" value="${sessionScope.booking_meal_qtys[mealLoop.index]}" />
-                    const mealCheckbox_${mealLoop.index} = document.getElementById('meal_${mealId}');
-                    if (mealCheckbox_${mealLoop.index}) {
-                        mealCheckbox_${mealLoop.index}.checked = true;
-                        const mealQtyInput_${mealLoop.index} = mealCheckbox_${mealLoop.index}.closest('.service-item').querySelector('.service-qty');
-                        if (mealQtyInput_${mealLoop.index}) {
-                            mealQtyInput_${mealLoop.index}.disabled = false;
-                            mealQtyInput_${mealLoop.index}.value = '${mealQty}';
-                        }
-                    }
-                </c:forEach>
-            </c:if>
-            
-            // Restore wellness services
-            <c:if test="${not empty sessionScope.booking_wellness_ids and not empty sessionScope.booking_wellness_qtys}">
-                <c:forEach var="wellnessId" items="${sessionScope.booking_wellness_ids}" varStatus="wellnessLoop">
-                    <c:set var="wellnessQty" value="${sessionScope.booking_wellness_qtys[wellnessLoop.index]}" />
-                    const wellnessCheckbox_${wellnessLoop.index} = document.getElementById('wellness_${wellnessId}');
-                    if (wellnessCheckbox_${wellnessLoop.index}) {
-                        wellnessCheckbox_${wellnessLoop.index}.checked = true;
-                        const wellnessQtyInput_${wellnessLoop.index} = wellnessCheckbox_${wellnessLoop.index}.closest('.service-item').querySelector('.service-qty');
-                        if (wellnessQtyInput_${wellnessLoop.index}) {
-                            wellnessQtyInput_${wellnessLoop.index}.disabled = false;
-                            wellnessQtyInput_${wellnessLoop.index}.value = '${wellnessQty}';
-                        }
-                    }
-                </c:forEach>
-            </c:if>
-            
-            // Update check out min date if check in date is set
-            const checkInDate = document.getElementById('checkInDate').value;
-            if (checkInDate) {
-                updateCheckOutMin();
-            }
-        }
         
         function updateCheckOutMin() {
             const checkIn = document.getElementById('checkInDate').value;

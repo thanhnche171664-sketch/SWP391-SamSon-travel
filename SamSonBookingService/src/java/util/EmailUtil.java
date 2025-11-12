@@ -91,9 +91,10 @@ public class EmailUtil {
         }
         
         try {
-            // Create reset link (legacy default). Prefer sendPasswordResetEmailWithLink overload.
+            // Create reset link
             String resetLink = "http://localhost:9999/SWP/reset-password?token=" + token;
             
+            // Email subject and content
             String subject = "Đặt lại mật khẩu - SamSon Travel";
             String htmlContent = createPasswordResetEmailContent(toEmail, resetLink);
             
@@ -109,39 +110,6 @@ public class EmailUtil {
             return sent;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error sending password reset email to: " + toEmail, e);
-            return false;
-        }
-    }
-    
-    /**
-     * Send password reset email using a fully-formed reset link.
-     * Prefer this overload in controllers to support dynamic base URL.
-     *
-     * @param toEmail Recipient email address
-     * @param fullResetLink Fully-qualified reset link
-     * @return true if email sent successfully, false otherwise
-     */
-    public static boolean sendPasswordResetEmailWithLink(String toEmail, String fullResetLink) {
-        if (toEmail == null || toEmail.trim().isEmpty()) {
-            LOGGER.warning("Recipient email is null or empty");
-            return false;
-        }
-        if (fullResetLink == null || fullResetLink.trim().isEmpty()) {
-            LOGGER.warning("Reset link is null or empty");
-            return false;
-        }
-        try {
-            String subject = "Đặt lại mật khẩu - SamSon Travel";
-            String htmlContent = createPasswordResetEmailContent(toEmail, fullResetLink);
-            boolean sent = sendEmail(toEmail, subject, htmlContent, true);
-            if (sent) {
-                LOGGER.info("Password reset email (with link) sent successfully to: " + toEmail);
-            } else {
-                LOGGER.warning("Failed to send password reset email (with link) to: " + toEmail);
-            }
-            return sent;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error sending password reset email (with link) to: " + toEmail, e);
             return false;
         }
     }

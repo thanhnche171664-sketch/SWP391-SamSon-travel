@@ -76,11 +76,18 @@ public class AddRoomServlet extends HttpServlet {
     
     private void handleMultipleFileUpload(HttpServletRequest request, int roomId) throws IOException, ServletException {
         Collection<Part> fileParts = request.getParts();
-        String uploadPath = getServletContext().getRealPath("") + "uploads" + java.io.File.separator + "rooms";
+        
+        // Lưu vào thư mục web/uploads (source directory, không bị mất khi clean build)
+        String realPath = getServletContext().getRealPath("/");
+        // Chuyển từ build/web sang web (source directory)
+        String webPath = realPath.replace("build" + java.io.File.separator + "web", "web");
+        String uploadPath = webPath + "uploads" + java.io.File.separator + "rooms";
         Path uploadDir = Paths.get(uploadPath);
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }
+        
+        System.out.println("DEBUG Room: Saving to " + uploadPath);
         
         boolean isFirstImage = true;
         int displayOrder = 1;

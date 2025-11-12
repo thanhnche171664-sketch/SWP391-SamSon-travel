@@ -169,11 +169,18 @@ public class EditHotelServlet extends HttpServlet {
         
         Collection<Part> fileParts = request.getParts();
         
+        System.out.println("=== DEBUG: handleMultipleFileUpload for hotelId=" + hotelId + " ===");
+        System.out.println("Total parts received: " + fileParts.size());
+        
         // Tính display order tiếp theo
         int existingCount = imageDAO.countImages("hotel", hotelId);
         int displayOrder = existingCount + 1;
         
+        int uploadedCount = 0;
+        
         for (Part filePart : fileParts) {
+            System.out.println("Processing part: name=" + filePart.getName() + ", size=" + filePart.getSize());
+            
             // Chỉ xử lý các part là file ảnh (có name="newImages")
             if (filePart.getName().equals("newImages") && filePart.getSize() > 0) {
                 
@@ -187,12 +194,17 @@ public class EditHotelServlet extends HttpServlet {
                 String fileExtension = fileName.substring(fileName.lastIndexOf("."));
                 String newFileName = "hotel_" + hotelId + "_" + System.currentTimeMillis() + fileExtension;
 
-                String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIR;
+                // Lưu vào thư mục web/uploads (source directory, không bị mất khi clean build)
+                String realPath = getServletContext().getRealPath("/");
+                // Chuyển từ build/web sang web (source directory)
+                String webPath = realPath.replace("build" + File.separator + "web", "web");
+                String uploadPath = webPath + UPLOAD_DIR;
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs();
                 }
 
+                System.out.println("DEBUG: Saving file to SOURCE directory: " + uploadPath + "/" + newFileName);
                 Path filePath = Paths.get(uploadPath, newFileName);
                 Files.copy(filePart.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -205,10 +217,14 @@ public class EditHotelServlet extends HttpServlet {
                 image.setDisplayOrder(displayOrder);
                 image.setAltText(fileName);
                 
-                imageDAO.insertImage(image);
+                boolean inserted = imageDAO.insertImage(image);
+                System.out.println("Database insert: " + inserted);
                 displayOrder++;
+                uploadedCount++;
             }
         }
+        
+        System.out.println("=== Total images uploaded: " + uploadedCount + " ===");
     }
     
     /**

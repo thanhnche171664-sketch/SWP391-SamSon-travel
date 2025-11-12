@@ -73,13 +73,19 @@ public class HotelImageServlet extends HttpServlet {
                 return;
             }
 
-            // Delete physical file if exists
+            // Delete physical file if exists (from web directory)
             try {
                 String imageUrl = image.getImageUrl(); // e.g., uploads/hotels/xxx.jpg
-                String realPath = getServletContext().getRealPath("") + File.separator + imageUrl.replace("/", File.separator);
-                File f = new File(realPath);
+                String realPath = getServletContext().getRealPath("/");
+                // Chuyển từ build/web sang web (source directory)
+                String webPath = realPath.replace("build" + File.separator + "web", "web");
+                String filePath = webPath + imageUrl.replace("/", File.separator);
+                File f = new File(filePath);
                 if (f.exists()) {
                     f.delete();
+                    System.out.println("Deleted image file: " + filePath);
+                } else {
+                    System.out.println("Image file not found: " + filePath);
                 }
             } catch (Exception ex) {
                 // Log and continue; DB record already removed

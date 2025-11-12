@@ -147,12 +147,19 @@ public class AddHotelServlet extends HttpServlet {
                 String fileExtension = fileName.substring(fileName.lastIndexOf("."));
                 String newFileName = "hotel_" + hotelId + "_" + System.currentTimeMillis() + fileExtension;
 
-                // Lấy đường dẫn thực tế của thư mục upload
-                String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIR;
+                // Lưu vào thư mục web/uploads (source directory, không bị mất khi clean build)
+                String realPath = getServletContext().getRealPath("/");
+                // Chuyển từ build/web sang web (source directory)
+                String webPath = realPath.replace("build" + File.separator + "web", "web");
+                String uploadPath = webPath + UPLOAD_DIR;
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs();
                 }
+
+                System.out.println("DEBUG: realPath = " + realPath);
+                System.out.println("DEBUG: webPath = " + webPath);
+                System.out.println("DEBUG: uploadPath = " + uploadPath);
 
                 // Lưu file
                 Path filePath = Paths.get(uploadPath, newFileName);

@@ -79,11 +79,18 @@ public class AddMealServiceServlet extends HttpServlet {
     
     private void handleMultipleFileUpload(HttpServletRequest request, int mealId) throws IOException, ServletException {
         Collection<Part> fileParts = request.getParts();
-        String uploadPath = getServletContext().getRealPath("") + "uploads" + java.io.File.separator + "meals";
+        
+        // Lưu vào thư mục web/uploads (source directory, không bị mất khi clean build)
+        String realPath = getServletContext().getRealPath("/");
+        // Chuyển từ build/web sang web (source directory)
+        String webPath = realPath.replace("build" + java.io.File.separator + "web", "web");
+        String uploadPath = webPath + "uploads" + java.io.File.separator + "meals";
         Path uploadDir = Paths.get(uploadPath);
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }
+        
+        System.out.println("DEBUG Meal: Saving to " + uploadPath);
         
         boolean isFirstImage = true;
         int displayOrder = 1;

@@ -97,26 +97,45 @@ public class EditRoomServlet extends HttpServlet {
     
     private void handleMultipleFileUpload(HttpServletRequest request, int roomId) throws IOException, ServletException {
         Collection<Part> fileParts = request.getParts();
-        String uploadPath = getServletContext().getRealPath("") + "uploads" + java.io.File.separator + "rooms";
+        
+        System.out.println("=== DEBUG: handleMultipleFileUpload for roomId=" + roomId + " ===");
+        System.out.println("Total parts received: " + fileParts.size());
+        
+        // Lưu vào thư mục web/uploads (source directory, không bị mất khi clean build)
+        String realPath = getServletContext().getRealPath("/");
+        // Chuyển từ build/web sang web (source directory)
+        String webPath = realPath.replace("build" + java.io.File.separator + "web", "web");
+        String uploadPath = webPath + "uploads" + java.io.File.separator + "rooms";
         Path uploadDir = Paths.get(uploadPath);
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }
+        
+        System.out.println("Upload directory: " + uploadPath);
         
         Image primaryImage = imageDAO.getPrimaryImage("room", roomId);
         boolean isFirstImage = (primaryImage == null);
         List<Image> existingImages = imageDAO.getImagesByEntity("room", roomId);
         int displayOrder = existingImages.size() + 1;
         
+        int uploadedCount = 0;
+        
         for (Part part : fileParts) {
+            System.out.println("Processing part: name=" + part.getName() + ", size=" + part.getSize());
+            
             if (part.getName().equals("images") && part.getSize() > 0) {
                 String fileName = part.getSubmittedFileName();
                 String contentType = part.getContentType();
-                if (!contentType.startsWith("image/")) continue;
+                if (!contentType.startsWith("image/")) {
+                    System.out.println("Skipping non-image: " + fileName);
+                    continue;
+                }
                 
                 String fileExtension = fileName.substring(fileName.lastIndexOf("."));
                 String uniqueFileName = "room_" + roomId + "_" + System.currentTimeMillis() + fileExtension;
                 Path filePath = uploadDir.resolve(uniqueFileName);
+                
+                System.out.println("Saving file: " + filePath.toString());
                 Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
                 
                 Image image = new Image();
@@ -126,11 +145,18 @@ public class EditRoomServlet extends HttpServlet {
                 image.setPrimary(isFirstImage);
                 image.setDisplayOrder(displayOrder);
                 image.setAltText("Room image " + displayOrder);
-                imageDAO.insertImage(image);
+                
+                boolean inserted = imageDAO.insertImage(image);
+                System.out.println("Database insert: " + inserted);
                 
                 isFirstImage = false;
                 displayOrder++;
+                uploadedCount++;
+                
+                try { Thread.sleep(10); } catch (InterruptedException e) {}
             }
         }
+        
+        System.out.println("=== Total images uploaded: " + uploadedCount + " ===");
     }
 }

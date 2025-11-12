@@ -125,27 +125,50 @@ public class EditMealServiceServlet extends HttpServlet {
     
     private void handleMultipleFileUpload(HttpServletRequest request, int mealId) throws IOException, ServletException {
         Collection<Part> fileParts = request.getParts();
-        String uploadPath = getServletContext().getRealPath("") + "uploads" + java.io.File.separator + "meals";
+        
+        System.out.println("=== DEBUG: handleMultipleFileUpload for mealId=" + mealId + " ===");
+        System.out.println("Total parts received: " + fileParts.size());
+        
+        // Lưu vào thư mục web/uploads (source directory, không bị mất khi clean build)
+        String realPath = getServletContext().getRealPath("/");
+        // Chuyển từ build/web sang web (source directory)
+        String webPath = realPath.replace("build" + java.io.File.separator + "web", "web");
+        String uploadPath = webPath + "uploads" + java.io.File.separator + "meals";
         Path uploadDir = Paths.get(uploadPath);
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }
+        
+        System.out.println("Upload directory: " + uploadPath);
+        System.out.println("Directory exists: " + Files.exists(uploadDir));
         
         Image primaryImage = imageDAO.getPrimaryImage("meal", mealId);
         boolean isFirstImage = (primaryImage == null);
         List<Image> existingImages = imageDAO.getImagesByEntity("meal", mealId);
         int displayOrder = existingImages.size() + 1;
         
+        int uploadedCount = 0;
+        
         for (Part part : fileParts) {
+            System.out.println("Processing part: name=" + part.getName() + ", size=" + part.getSize() + 
+                             ", contentType=" + part.getContentType() + ", submittedFileName=" + part.getSubmittedFileName());
+            
             if (part.getName().equals("images") && part.getSize() > 0) {
                 String fileName = part.getSubmittedFileName();
                 String contentType = part.getContentType();
-                if (!contentType.startsWith("image/")) continue;
+                
+                if (!contentType.startsWith("image/")) {
+                    System.out.println("Skipping non-image file: " + fileName);
+                    continue;
+                }
                 
                 String fileExtension = fileName.substring(fileName.lastIndexOf("."));
                 String uniqueFileName = "meal_" + mealId + "_" + System.currentTimeMillis() + fileExtension;
                 Path filePath = uploadDir.resolve(uniqueFileName);
+                
+                System.out.println("Saving file: " + filePath.toString());
                 Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("File saved successfully!");
                 
                 Image image = new Image();
                 image.setEntityType("meal");
@@ -154,11 +177,19 @@ public class EditMealServiceServlet extends HttpServlet {
                 image.setPrimary(isFirstImage);
                 image.setDisplayOrder(displayOrder);
                 image.setAltText("Meal service image " + displayOrder);
-                imageDAO.insertImage(image);
+                
+                boolean inserted = imageDAO.insertImage(image);
+                System.out.println("Database insert result: " + inserted);
                 
                 isFirstImage = false;
                 displayOrder++;
+                uploadedCount++;
+                
+                // Add small delay to ensure unique filenames
+                try { Thread.sleep(10); } catch (InterruptedException e) {}
             }
         }
+        
+        System.out.println("=== Total images uploaded: " + uploadedCount + " ===");
     }
 }
