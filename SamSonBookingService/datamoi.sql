@@ -72,10 +72,10 @@ CREATE TABLE Rooms (
     FOREIGN KEY (hotel_id) REFERENCES Hotels(id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
-
 -- 6️⃣ BẢNG DỊCH VỤ VẬN CHUYỂN
 CREATE TABLE TransportServices (
     transport_id INT IDENTITY(1,1) PRIMARY KEY,
+    hotel_id INT NOT NULL,
     category_id INT NOT NULL,
     vehicle_type NVARCHAR(20) NOT NULL CHECK (vehicle_type IN ('CAR','MINIVAN','BUS','LIMOUSINE','SELF')),
     vehicle_name NVARCHAR(100),
@@ -85,11 +85,14 @@ CREATE TABLE TransportServices (
     price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
     capacity INT NOT NULL,
     current_passengers INT DEFAULT 0,
+    image NVARCHAR(255),
     created_at DATETIME DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (hotel_id) REFERENCES Hotels(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (category_id) REFERENCES ServiceCategories(category_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
-
 -- 7️⃣ BẢNG DỊCH VỤ ĂN UỐNG
 CREATE TABLE Meal_Services (
     meal_id INT IDENTITY(1,1) PRIMARY KEY,
@@ -250,28 +253,28 @@ INSERT INTO ServiceCategories (category_code, category_name) VALUES
 -- Insert sample rooms (moved to comprehensive section after hotels are created)
 -- Insert TransportServices
 INSERT INTO TransportServices 
-(category_id, vehicle_type, vehicle_name, description, pickup_location, departure_time, price, capacity) 
+(hotel_id,category_id, vehicle_type, vehicle_name, description, pickup_location, departure_time, price, capacity,image) 
 VALUES
-(2, 'CAR', N'Xe ô tô 4 chỗ VinFast Lux A2.0', N'Xe riêng tiện nghi, lái xe thân thiện', N'Hà Nội - Sầm Sơn', '2025-01-01 08:00:00', 800000.00, 4),
-(2, 'CAR', N'Toyota Vios 4 chỗ', N'Xe phổ thông tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-02 09:00:00', 900000.00, 4),
-(2, 'CAR', N'Mazda 3', N'Xe riêng sang trọng, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-03 07:30:00', 950000.00, 4),
-(2, 'CAR', N'Honda City', N'Lái xe chuyên nghiệp, phục vụ tận nơi', N'Hà Nội - Sầm Sơn', '2025-01-04 08:15:00', 850000.00, 4),
-(2, 'MINIVAN', N'Toyota Innova 7 chỗ', N'Phù hợp gia đình hoặc nhóm nhỏ', N'Hà Nội - Sầm Sơn', '2025-01-05 06:00:00', 1800000.00, 7),
-(2, 'MINIVAN', N'Mitsubishi Xpander', N'Không gian rộng rãi, tiện nghi', N'Hà Nội - Sầm Sơn', '2025-01-06 09:00:00', 1200000.00, 7),
-(2, 'MINIVAN', N'Kia Carnival', N'Xe sang trọng, có TV và wifi', N'Hà Nội - Sầm Sơn', '2025-01-07 08:30:00', 1500000.00, 7),
-(2, 'MINIVAN', N'Toyota Fortuner', N'Xe mạnh mẽ, phù hợp địa hình đồi núi', N'Hà Nội - Sầm Sơn', '2025-01-08 05:45:00', 2000000.00, 7),
-(2, 'BUS', N'Xe khách 29 chỗ', N'Phục vụ du lịch theo đoàn, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-09 07:00:00', 250000.00, 29),
-(2, 'BUS', N'Xe giường nằm 45 chỗ', N'Giường nằm cao cấp, chăn gối sạch sẽ', N'Hà Nội - Sầm Sơn', '2025-01-10 18:00:00', 800000.00, 45),
-(2, 'BUS', N'Xe khách 35 chỗ', N'Xe mới, có nhà vệ sinh mini', N'Hà Nội - Sầm Sơn', '2025-01-11 19:00:00', 600000.00, 35),
-(2, 'BUS', N'Xe giường nằm cao cấp', N'Trang bị TV cá nhân và sạc USB', N'Hà Nội - Sầm Sơn', '2025-01-12 20:00:00', 450000.00, 40),
-(2, 'LIMOUSINE', N'Xe Limousine Dcar 9 chỗ', N'Ghế massage, wifi, nước uống miễn phí', N'Hà Nội - Sầm Sơn', '2025-01-13 06:30:00', 900000.00, 9),
-(2, 'LIMOUSINE', N'Limousine 16 chỗ VIP', N'Nội thất da cao cấp, màn hình LED', N'Hà Nội - Sầm Sơn', '2025-01-14 08:00:00', 1000000.00, 16),
-(2, 'LIMOUSINE', N'Limousine Executive', N'Phục vụ doanh nhân, yên tĩnh và sang trọng', N'Hà Nội - Sầm Sơn', '2025-01-15 07:30:00', 850000.00, 9),
-(2, 'LIMOUSINE', N'Limousine 11 chỗ', N'Đưa đón tận nơi, có wifi', N'Hà Nội - Sầm Sơn', '2025-01-16 09:00:00', 950000.00, 11),
-(2, 'SELF', N'Toyota Corolla Altis', N'Xe tự lái, tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-17 08:00:00', 700000.00, 4),
-(2, 'SELF', N'VinFast VF e34', N'Xe điện tự lái, thân thiện môi trường', N'Hà Nội - Sầm Sơn', '2025-01-18 10:00:00', 900000.00, 4),
-(2, 'SELF', N'Kia Morning', N'Xe nhỏ gọn, dễ di chuyển trong thành phố', N'Hà Nội - Sầm Sơn', '2025-01-19 07:45:00', 500000.00, 4),
-(2, 'SELF', N'Mazda CX5', N'Xe SUV tự lái cao cấp, phù hợp du lịch', N'Hà Nội - Sầm Sơn', '2025-01-20 08:15:00', 1200000.00, 5);
+(1,2, 'CAR', N'Xe ô tô 4 chỗ VinFast Lux A2.0', N'Xe riêng tiện nghi, lái xe thân thiện', N'Hà Nội - Sầm Sơn', '2025-01-01 08:00:00', 800000.00, 4,N'Imagetransport/Xeoto4choVinFastLuxA2.0.jpg'),
+(1,2, 'CAR', N'Toyota Vios 4 chỗ', N'Xe phổ thông tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-02 09:00:00', 900000.00, 4,N'Imagetransport/ToyotaVios4cho.jpg'),
+(1,2, 'CAR', N'Mazda 3', N'Xe riêng sang trọng, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-03 07:30:00', 950000.00, 4,N'Imagetransport/Mazda3.jpg'),
+(1,2, 'CAR', N'Honda City', N'Lái xe chuyên nghiệp, phục vụ tận nơi', N'Hà Nội - Sầm Sơn', '2025-01-04 08:15:00', 850000.00, 4,N'Imagetransport/HondaCity.jpg'),
+(1,2, 'MINIVAN', N'Toyota Innova 7 chỗ', N'Phù hợp gia đình hoặc nhóm nhỏ', N'Hà Nội - Sầm Sơn', '2025-01-05 06:00:00', 1800000.00, 7,N'Imagetransport/ToyotaInnova7cho.jpg'),
+(1,2, 'MINIVAN', N'Mitsubishi Xpander', N'Không gian rộng rãi, tiện nghi', N'Hà Nội - Sầm Sơn', '2025-01-06 09:00:00', 1200000.00, 7,N'Imagetransport/MitsubishiXpander.jpg'),
+(1,2, 'MINIVAN', N'Kia Carnival', N'Xe sang trọng, có TV và wifi', N'Hà Nội - Sầm Sơn', '2025-01-07 08:30:00', 1500000.00, 7,N'Imagetransport/KiaCarnival.jpg'),
+(1,2, 'MINIVAN', N'Toyota Fortuner', N'Xe mạnh mẽ, phù hợp địa hình đồi núi', N'Hà Nội - Sầm Sơn', '2025-01-08 05:45:00', 2000000.00, 7,N'Imagetransport/ToyotaFortuner.jpg'),
+(1,2, 'BUS', N'Xe khách 29 chỗ', N'Phục vụ du lịch theo đoàn, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-09 07:00:00', 250000.00, 29,N'Imagetransport/Xekhach29cho.jpg'),
+(1,2, 'BUS', N'Xe giường nằm 45 chỗ', N'Giường nằm cao cấp, chăn gối sạch sẽ', N'Hà Nội - Sầm Sơn', '2025-01-10 18:00:00', 800000.00, 45,N'Imagetransport/Xegiưongnam45cho.jpg'),
+(1,2, 'BUS', N'Xe khách 35 chỗ', N'Xe mới, có nhà vệ sinh mini', N'Hà Nội - Sầm Sơn', '2025-01-11 19:00:00', 600000.00, 35,N'Imagetransport/Xekhach35cho.jpg'),
+(1,2, 'BUS', N'Xe giường nằm cao cấp', N'Trang bị TV cá nhân và sạc USB', N'Hà Nội - Sầm Sơn', '2025-01-12 20:00:00', 450000.00, 40,N'Imagetransport/Xegiưongnamcaocap.jpg'),
+(1,2, 'LIMOUSINE', N'Xe Limousine Dcar 9 chỗ', N'Ghế massage, wifi, nước uống miễn phí', N'Hà Nội - Sầm Sơn', '2025-01-13 06:30:00', 900000.00, 9,N'Imagetransport/XeLimousineDcar9cho.jpg'),
+(1,2, 'LIMOUSINE', N'Limousine 16 chỗ VIP', N'Nội thất da cao cấp, màn hình LED', N'Hà Nội - Sầm Sơn', '2025-01-14 08:00:00', 1000000.00, 16,N'Imagetransport/Limousine16choVIP.jpg'),
+(1,2, 'LIMOUSINE', N'Limousine Executive', N'Phục vụ doanh nhân, yên tĩnh và sang trọng', N'Hà Nội - Sầm Sơn', '2025-01-15 07:30:00', 850000.00, 9,N'Imagetransport/LimousineExecutive.jpg'),
+(1,2, 'LIMOUSINE', N'Limousine 11 chỗ', N'Đưa đón tận nơi, có wifi', N'Hà Nội - Sầm Sơn', '2025-01-16 09:00:00', 950000.00, 11,N'Imagetransport/Limousine11cho.jpg'),
+(1,2, 'SELF', N'Toyota Corolla Altis', N'Xe tự lái, tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-17 08:00:00', 700000.00, 4,N'Imagetransport/ToyotaCorollaAltis.jpg'),
+(1,2, 'SELF', N'VinFast VF e34', N'Xe điện tự lái, thân thiện môi trường', N'Hà Nội - Sầm Sơn', '2025-01-18 10:00:00', 900000.00, 4,N'Imagetransport/VinFastVFe34.jpg'),
+(1,2, 'SELF', N'Kia Morning', N'Xe nhỏ gọn, dễ di chuyển trong thành phố', N'Hà Nội - Sầm Sơn', '2025-01-19 07:45:00', 500000.00, 4,N'Imagetransport/KiaMorning.jpg'),
+(1,2, 'SELF', N'Mazda CX5', N'Xe SUV tự lái cao cấp, phù hợp du lịch', N'Hà Nội - Sầm Sơn', '2025-01-20 08:15:00', 1200000.00, 5,N'Imagetransport/MazdaCX5.jpg');
 
 -- Note: Meal_Services and Wellness_Services will be inserted after Hotels are created in comprehensive section
 

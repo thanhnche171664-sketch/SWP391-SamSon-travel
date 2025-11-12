@@ -188,7 +188,7 @@ public class AuthFilter implements Filter {
         
         switch (normalizedRoleName) {
             case SERVICE_MANAGER_ROLE:
-                return path.startsWith("/service-manager/") || 
+                return path.startsWith("/wellness-list") || 
                        path.startsWith("/customer/") ||
                        path.equals("/dashboard.jsp") ||
                        path.equals("/profile.jsp") ||
