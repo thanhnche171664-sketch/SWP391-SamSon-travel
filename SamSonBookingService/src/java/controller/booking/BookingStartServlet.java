@@ -4,10 +4,12 @@ import dao.HotelDAO;
 import dao.RoomDAO;
 import dao.MealServiceDAO;
 import dao.WellnessServiceDAO;
+import dao.TransportServiceDAO;
 import entity.Hotel;
 import entity.Room;
 import entity.MealService;
 import entity.WellnessService;
+import entity.TransportService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,6 +25,7 @@ public class BookingStartServlet extends HttpServlet {
     private final RoomDAO roomDAO = new RoomDAO();
     private final MealServiceDAO mealServiceDAO = new MealServiceDAO();
     private final WellnessServiceDAO wellnessServiceDAO = new WellnessServiceDAO();
+    private final TransportServiceDAO transportServiceDAO = new TransportServiceDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -45,11 +48,13 @@ public class BookingStartServlet extends HttpServlet {
             List<Room> rooms = roomDAO.getRoomsByHotelId(hotelId);
             List<MealService> mealServices = mealServiceDAO.getMealServicesByHotelId(hotelId);
             List<WellnessService> wellnessServices = wellnessServiceDAO.getWellnessServicesByHotelId(hotelId);
+            List<TransportService> transportServices = transportServiceDAO.getTransportServicesByHotelId(hotelId);
 
             request.setAttribute("hotel", hotel);
             request.setAttribute("rooms", rooms);
             request.setAttribute("mealServices", mealServices);
             request.setAttribute("wellnessServices", wellnessServices);
+            request.setAttribute("transportServices", transportServices);
             request.getRequestDispatcher("/bookings/booking_form.jsp").forward(request, response);
 
         } catch (NumberFormatException ex) {

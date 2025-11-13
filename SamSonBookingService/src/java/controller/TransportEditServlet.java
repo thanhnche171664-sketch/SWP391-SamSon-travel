@@ -1,7 +1,9 @@
 package controller;
 
 import dao.TransportServiceDAO;
+import dao.HotelDAO;             // 🔹 THÊM
 import entity.TransportService;
+import entity.Hotel;            // 🔹 THÊM
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -10,12 +12,20 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;          // 🔹 THÊM
 
 @WebServlet(name = "TransportEditServlet", urlPatterns = {"/transport-edit"})
 public class TransportEditServlet extends HttpServlet {
 
     private final TransportServiceDAO dao = new TransportServiceDAO();
+    private final HotelDAO hotelDAO = new HotelDAO();   // 🔹 THÊM
     private static final String DATE_FMT = "yyyy-MM-dd HH:mm:ss";
+
+    // 🔹 Hàm load danh sách khách sạn cho dropdown
+    private void loadHotels(HttpServletRequest request) {
+        List<Hotel> hotels = hotelDAO.getAllHotels();   // đổi tên method nếu DAO bạn khác
+        request.setAttribute("hotels", hotels);
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -29,6 +39,7 @@ public class TransportEditServlet extends HttpServlet {
                 return;
             }
             request.setAttribute("transport", ts);
+            loadHotels(request); // 🔹 đưa danh sách hotel cho JSP
             request.getRequestDispatcher("transport_edit.jsp").forward(request, response);
         } catch (NumberFormatException e) {
             request.setAttribute("error", "ID không hợp lệ!");
@@ -57,7 +68,7 @@ public class TransportEditServlet extends HttpServlet {
 
         int id = 0;
         int hotelId = 0;
-        int categoryId = 2; 
+        int categoryId = 2;
         double price = 0;
         int capacity = 0;
         Date departureTime = null;
@@ -130,7 +141,8 @@ public class TransportEditServlet extends HttpServlet {
 
         if (hasError) {
             request.setAttribute("error", sbError.toString());
-            request.setAttribute("transport", ts); 
+            request.setAttribute("transport", ts);
+            loadHotels(request); // 🔹 load lại hotels để dropdown không bị rỗng khi báo lỗi
             request.getRequestDispatcher("transport_edit.jsp").forward(request, response);
             return;
         }
@@ -152,6 +164,7 @@ public class TransportEditServlet extends HttpServlet {
         } else {
             request.setAttribute("error", "Cập nhật thất bại!");
             request.setAttribute("transport", ts);
+            loadHotels(request); // 🔹 lại load hotels
             request.getRequestDispatcher("transport_edit.jsp").forward(request, response);
         }
     }
