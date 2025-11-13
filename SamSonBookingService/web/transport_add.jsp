@@ -20,14 +20,23 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Khách sạn</label>
-                    <input type="number" name="hotelId" class="form-control"
-                           value="${param.hotelId != null ? param.hotelId : 1}" required>
+                    <select name="hotelId" class="form-select" required>
+                        <c:forEach var="h" items="${hotels}">
+                            <option value="${h.id}"
+                                <c:if test="${param.hotelId == h.id || (empty param.hotelId && h.id == 1)}">
+                                    selected
+                                </c:if>>
+                                ${h.name}
+                            </option>
+                        </c:forEach>
+                    </select>
                 </div>
+
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Danh mục</label>
-                    <!-- cố định luôn là 2 -->
                     <input type="number" name="categoryId" class="form-control" value="2" readonly>
                 </div>
+
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Loại xe</label>
                     <select name="vehicleType" class="form-select">

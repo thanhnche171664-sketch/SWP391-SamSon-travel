@@ -3,10 +3,12 @@ package controller.booking;
 import dao.BookingDAO;
 import dao.MealServiceDAO;
 import dao.WellnessServiceDAO;
+import dao.TransportServiceDAO;
 import entity.Booking;
 import entity.BookingDetail;
 import entity.MealService;
 import entity.WellnessService;
+import entity.TransportService;
 import service.BookingService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,6 +31,7 @@ public class BookingCreateServlet extends HttpServlet {
     private final BookingService bookingService = new BookingService();
     private final MealServiceDAO mealServiceDAO = new MealServiceDAO();
     private final WellnessServiceDAO wellnessServiceDAO = new WellnessServiceDAO();
+    private final TransportServiceDAO transportServiceDAO = new TransportServiceDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -120,6 +123,45 @@ public class BookingCreateServlet extends HttpServlet {
                 }
             }
 
+            // Parse transport selection (multiple transports can be selected)
+            String[] transportIds = request.getParameterValues("transport_id");
+            String[] transportQtys = request.getParameterValues("transport_qty");
+            if (transportIds != null && transportQtys != null) {
+                // Match transport IDs with quantities by index
+                List<TransportService> allTransports = transportServiceDAO.getTransportServicesByHotelId(hotelId);
+                for (String transportIdStr : transportIds) {
+                    try {
+                        int transportId = Integer.parseInt(transportIdStr);
+                        // Find the transport in the list to get its index
+                        int transportIndex = -1;
+                        for (int j = 0; j < allTransports.size(); j++) {
+                            if (allTransports.get(j).getTransportId() == transportId) {
+                                transportIndex = j;
+                                break;
+                            }
+                        }
+                        if (transportIndex >= 0 && transportIndex < transportQtys.length) {
+                            int qty = Integer.parseInt(transportQtys[transportIndex]);
+                            if (qty > 0) {
+                                TransportService ts = transportServiceDAO.getById(transportId);
+                                if (ts != null) {
+                                    BookingDetail addon = new BookingDetail();
+                                    addon.setCategoryName("TRANSPORT");
+                                    addon.setCategoryId(transportId);
+                                    addon.setPrice(ts.getPrice());
+                                    addon.setQuantity(qty);
+                                    addons.add(addon);
+                                    // Store name for this addon
+                                    addonNames.put(transportId, ts.getVehicleName() + " (" + ts.getVehicleType() + ")");
+                                }
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        // Skip invalid transport ID
+                    }
+                }
+            }
+
             // Create booking
             Booking booking = new Booking();
             booking.setUserId(user.getId());
@@ -129,7 +171,8 @@ public class BookingCreateServlet extends HttpServlet {
             booking.setBookingSource("ONLINE");
             booking.setStatus("pending");
             booking.setTotalPrice(total);
-            booking.setTransportFee(0);
+            booking.setTransportId(null); // Transport is now stored in Booking_Addons
+            booking.setTransportFee(0); // Transport fee is included in total, calculated from addons
             booking.setBookingDate(new java.util.Date());
             booking.setCreatedBy(user.getId());
 

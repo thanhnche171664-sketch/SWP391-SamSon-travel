@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -462,6 +463,10 @@
                     <span id="servicesPrice">0₫</span>
                 </div>
                 <div class="price-item">
+                    <span>Vận chuyển:</span>
+                    <span id="transportPrice">0₫</span>
+                </div>
+                <div class="price-item">
                     <span>Tổng cộng:</span>
                     <span id="totalPrice">0₫</span>
                 </div>
@@ -564,6 +569,40 @@
                 </div>
             </div>
             
+            <div class="form-section">
+                <div class="section-title">🚗 Dịch vụ vận chuyển</div>
+                <c:choose>
+                    <c:when test="${not empty transportServices and fn:length(transportServices) > 0}">
+                        <div class="services-grid">
+                            <c:forEach var="t" items="${transportServices}" varStatus="loop">
+                                <div class="service-item">
+                                    <input type="checkbox" name="transport_id" value="${t.transportId}" id="transport_${t.transportId}" 
+                                           data-price="${t.price}" onchange="toggleTransportQty(this); calculatePrice()" />
+                                    <div class="service-content">
+                                        <label for="transport_${t.transportId}" class="service-label">
+                                            <strong>${t.vehicleName}</strong><br/>
+                                            <small style="color: #666;">${t.vehicleType} - ${t.pickupLocation}</small><br/>
+                                            <small style="color: #666;">
+                                                <fmt:formatDate value="${t.departureTime}" pattern="dd/MM/yyyy HH:mm" /> - 
+                                                ${t.capacity} chỗ
+                                            </small>
+                                        </label>
+                                        <span class="service-price"><fmt:formatNumber value="${t.price}" pattern="#,###" />₫</span>
+                                        <input type="number" name="transport_qty" value="1" min="1" class="service-qty" 
+                                               data-index="${loop.index}" onchange="calculatePrice()" />
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div style="padding: 20px; text-align: center; color: #666; background: #f5f5f5; border-radius: 10px;">
+                            <p>Hiện tại chưa có dịch vụ vận chuyển nào. Vui lòng liên hệ admin để thêm dịch vụ.</p>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            
             <button type="submit" class="submit-btn" id="submitBtn">
                 <span class="text">🚀 Xem lại & Thanh toán</span>
                 <span class="loading">⏳</span>
@@ -617,6 +656,22 @@
                 </c:forEach>
             </c:if>
             
+            // Restore transport selection
+            <c:if test="${not empty sessionScope.booking_transport_ids and not empty sessionScope.booking_transport_qtys}">
+                <c:forEach var="transportId" items="${sessionScope.booking_transport_ids}" varStatus="transportLoop">
+                    <c:set var="transportQty" value="${sessionScope.booking_transport_qtys[transportLoop.index]}" />
+                    const transportCheckbox_${transportLoop.index} = document.querySelector('input[name="transport_id"][value="${transportId}"]');
+                    if (transportCheckbox_${transportLoop.index}) {
+                        transportCheckbox_${transportLoop.index}.checked = true;
+                        const transportQtyInput_${transportLoop.index} = transportCheckbox_${transportLoop.index}.closest('.service-item').querySelector('.service-qty');
+                        if (transportQtyInput_${transportLoop.index}) {
+                            transportQtyInput_${transportLoop.index}.disabled = false;
+                            transportQtyInput_${transportLoop.index}.value = '${transportQty}';
+                        }
+                    }
+                </c:forEach>
+            </c:if>
+            
             // Update check out min date if check in date is set
             const checkInDate = document.getElementById('checkInDate').value;
             if (checkInDate) {
@@ -644,6 +699,10 @@
             }
         }
         
+        function toggleTransportQty(checkbox) {
+            toggleServiceQty(checkbox);
+        }
+        
         function formatCurrency(amount) {
             return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
         }
@@ -664,18 +723,33 @@
             
             const roomTotal = roomPrice * nights * numberOfRooms;
             
+            // Calculate meal and wellness services (exclude transport)
             let servicesTotal = 0;
             document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                // Skip transport checkboxes (they have name="transport_id")
+                if (checkbox.name === 'transport_id') {
+                    return;
+                }
                 const price = parseFloat(checkbox.dataset.price) || 0;
                 const qtyInput = checkbox.closest('.service-item').querySelector('.service-qty');
                 const qty = parseInt(qtyInput.value) || 1;
                 servicesTotal += price * qty;
             });
             
-            const total = roomTotal + servicesTotal;
+            // Calculate transport fee (multiple transports can be selected)
+            let transportTotal = 0;
+            document.querySelectorAll('input[name="transport_id"]:checked').forEach(checkbox => {
+                const price = parseFloat(checkbox.dataset.price) || 0;
+                const qtyInput = checkbox.closest('.service-item').querySelector('.service-qty');
+                const qty = parseInt(qtyInput.value) || 1;
+                transportTotal += price * qty;
+            });
+            
+            const total = roomTotal + servicesTotal + transportTotal;
             
             document.getElementById('roomPrice').textContent = formatCurrency(roomTotal);
             document.getElementById('servicesPrice').textContent = formatCurrency(servicesTotal);
+            document.getElementById('transportPrice').textContent = formatCurrency(transportTotal);
             document.getElementById('totalPrice').textContent = formatCurrency(total);
         }
         
@@ -718,7 +792,7 @@
         
         // Calculate price on any change
         document.addEventListener('change', function(e) {
-            if (e.target.matches('input[type="number"], select, input[type="checkbox"]')) {
+            if (e.target.matches('input[type="number"], select, input[type="checkbox"], input[type="radio"]')) {
                 calculatePrice();
             }
         });

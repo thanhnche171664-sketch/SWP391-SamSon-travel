@@ -353,7 +353,7 @@ CREATE TABLE Tour_Media (
 CREATE TABLE Booking_Addons (
     addon_id INT IDENTITY(1,1) PRIMARY KEY,
     booking_id INT NOT NULL,
-    addon_type NVARCHAR(20) NOT NULL CHECK (addon_type IN ('MEAL','WELLNESS')),
+    addon_type NVARCHAR(20) NOT NULL CHECK (addon_type IN ('MEAL','WELLNESS','TRANSPORT')),
     reference_id INT NOT NULL,
     name NVARCHAR(150) NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
@@ -400,27 +400,29 @@ INSERT INTO Hotels (name, address, description, manager_id, rating, featured, am
     (N'Khách sạn Sao Mai', N'789 Đường Hùng Vương, Sầm Sơn', N'Khách sạn gia đình thân thiện', NULL, 3.8, 0, N'WiFi, Family Rooms, Restaurant', '14:00:00', '12:00:00', 'uploads/hotel_image/hotel_5.jpg');
 
 -- 3.5. Insert dịch vụ vận chuyển
-INSERT INTO TransportServices (category_id, vehicle_type, vehicle_name, description, pickup_location, departure_time, price, capacity) VALUES
-    (2, 'CAR', N'Xe ô tô 4 chỗ VinFast Lux A2.0', N'Xe riêng tiện nghi, lái xe thân thiện', N'Hà Nội - Sầm Sơn', '2025-01-01 08:00:00', 800000.00, 4),
-    (2, 'CAR', N'Toyota Vios 4 chỗ', N'Xe phổ thông tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-02 09:00:00', 900000.00, 4),
-    (2, 'CAR', N'Mazda 3', N'Xe riêng sang trọng, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-03 07:30:00', 950000.00, 4),
-    (2, 'CAR', N'Honda City', N'Lái xe chuyên nghiệp, phục vụ tận nơi', N'Hà Nội - Sầm Sơn', '2025-01-04 08:15:00', 850000.00, 4),
-    (2, 'MINIVAN', N'Toyota Innova 7 chỗ', N'Phù hợp gia đình hoặc nhóm nhỏ', N'Hà Nội - Sầm Sơn', '2025-01-05 06:00:00', 1800000.00, 7),
-    (2, 'MINIVAN', N'Mitsubishi Xpander', N'Không gian rộng rãi, tiện nghi', N'Hà Nội - Sầm Sơn', '2025-01-06 09:00:00', 1200000.00, 7),
-    (2, 'MINIVAN', N'Kia Carnival', N'Xe sang trọng, có TV và wifi', N'Hà Nội - Sầm Sơn', '2025-01-07 08:30:00', 1500000.00, 7),
-    (2, 'MINIVAN', N'Toyota Fortuner', N'Xe mạnh mẽ, phù hợp địa hình đồi núi', N'Hà Nội - Sầm Sơn', '2025-01-08 05:45:00', 2000000.00, 7),
-    (2, 'BUS', N'Xe khách 29 chỗ', N'Phục vụ du lịch theo đoàn, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-09 07:00:00', 250000.00, 29),
-    (2, 'BUS', N'Xe giường nằm 45 chỗ', N'Giường nằm cao cấp, chăn gối sạch sẽ', N'Hà Nội - Sầm Sơn', '2025-01-10 18:00:00', 800000.00, 45),
-    (2, 'BUS', N'Xe khách 35 chỗ', N'Xe mới, có nhà vệ sinh mini', N'Hà Nội - Sầm Sơn', '2025-01-11 19:00:00', 600000.00, 35),
-    (2, 'BUS', N'Xe giường nằm cao cấp', N'Trang bị TV cá nhân và sạc USB', N'Hà Nội - Sầm Sơn', '2025-01-12 20:00:00', 450000.00, 40),
-    (2, 'LIMOUSINE', N'Xe Limousine Dcar 9 chỗ', N'Ghế massage, wifi, nước uống miễn phí', N'Hà Nội - Sầm Sơn', '2025-01-13 06:30:00', 900000.00, 9),
-    (2, 'LIMOUSINE', N'Limousine 16 chỗ VIP', N'Nội thất da cao cấp, màn hình LED', N'Hà Nội - Sầm Sơn', '2025-01-14 08:00:00', 1000000.00, 16),
-    (2, 'LIMOUSINE', N'Limousine Executive', N'Phục vụ doanh nhân, yên tĩnh và sang trọng', N'Hà Nội - Sầm Sơn', '2025-01-15 07:30:00', 850000.00, 9),
-    (2, 'LIMOUSINE', N'Limousine 11 chỗ', N'Đưa đón tận nơi, có wifi', N'Hà Nội - Sầm Sơn', '2025-01-16 09:00:00', 950000.00, 11),
-    (2, 'SELF', N'Toyota Corolla Altis', N'Xe tự lái, tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-17 08:00:00', 700000.00, 4),
-    (2, 'SELF', N'VinFast VF e34', N'Xe điện tự lái, thân thiện môi trường', N'Hà Nội - Sầm Sơn', '2025-01-18 10:00:00', 900000.00, 4),
-    (2, 'SELF', N'Kia Morning', N'Xe nhỏ gọn, dễ di chuyển trong thành phố', N'Hà Nội - Sầm Sơn', '2025-01-19 07:45:00', 500000.00, 4),
-    (2, 'SELF', N'Mazda CX5', N'Xe SUV tự lái cao cấp, phù hợp du lịch', N'Hà Nội - Sầm Sơn', '2025-01-20 08:15:00', 1200000.00, 5);
+-- LƯU Ý: Các transport services này dùng chung cho tất cả hotels (hotel_id = 1 hoặc NULL)
+-- Nếu muốn gán cho hotel cụ thể, sử dụng INSERT ở dòng 523
+INSERT INTO TransportServices (hotel_id, category_id, vehicle_type, vehicle_name, description, pickup_location, departure_time, price, capacity) VALUES
+    (1, 2, 'CAR', N'Xe ô tô 4 chỗ VinFast Lux A2.0', N'Xe riêng tiện nghi, lái xe thân thiện', N'Hà Nội - Sầm Sơn', '2025-01-01 08:00:00', 800000.00, 4),
+    (1, 2, 'CAR', N'Toyota Vios 4 chỗ', N'Xe phổ thông tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-02 09:00:00', 900000.00, 4),
+    (1, 2, 'CAR', N'Mazda 3', N'Xe riêng sang trọng, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-03 07:30:00', 950000.00, 4),
+    (1, 2, 'CAR', N'Honda City', N'Lái xe chuyên nghiệp, phục vụ tận nơi', N'Hà Nội - Sầm Sơn', '2025-01-04 08:15:00', 850000.00, 4),
+    (1, 2, 'MINIVAN', N'Toyota Innova 7 chỗ', N'Phù hợp gia đình hoặc nhóm nhỏ', N'Hà Nội - Sầm Sơn', '2025-01-05 06:00:00', 1800000.00, 7),
+    (1, 2, 'MINIVAN', N'Mitsubishi Xpander', N'Không gian rộng rãi, tiện nghi', N'Hà Nội - Sầm Sơn', '2025-01-06 09:00:00', 1200000.00, 7),
+    (1, 2, 'MINIVAN', N'Kia Carnival', N'Xe sang trọng, có TV và wifi', N'Hà Nội - Sầm Sơn', '2025-01-07 08:30:00', 1500000.00, 7),
+    (1, 2, 'MINIVAN', N'Toyota Fortuner', N'Xe mạnh mẽ, phù hợp địa hình đồi núi', N'Hà Nội - Sầm Sơn', '2025-01-08 05:45:00', 2000000.00, 7),
+    (1, 2, 'BUS', N'Xe khách 29 chỗ', N'Phục vụ du lịch theo đoàn, có điều hòa', N'Hà Nội - Sầm Sơn', '2025-01-09 07:00:00', 250000.00, 29),
+    (1, 2, 'BUS', N'Xe giường nằm 45 chỗ', N'Giường nằm cao cấp, chăn gối sạch sẽ', N'Hà Nội - Sầm Sơn', '2025-01-10 18:00:00', 800000.00, 45),
+    (1, 2, 'BUS', N'Xe khách 35 chỗ', N'Xe mới, có nhà vệ sinh mini', N'Hà Nội - Sầm Sơn', '2025-01-11 19:00:00', 600000.00, 35),
+    (1, 2, 'BUS', N'Xe giường nằm cao cấp', N'Trang bị TV cá nhân và sạc USB', N'Hà Nội - Sầm Sơn', '2025-01-12 20:00:00', 450000.00, 40),
+    (1, 2, 'LIMOUSINE', N'Xe Limousine Dcar 9 chỗ', N'Ghế massage, wifi, nước uống miễn phí', N'Hà Nội - Sầm Sơn', '2025-01-13 06:30:00', 900000.00, 9),
+    (1, 2, 'LIMOUSINE', N'Limousine 16 chỗ VIP', N'Nội thất da cao cấp, màn hình LED', N'Hà Nội - Sầm Sơn', '2025-01-14 08:00:00', 1000000.00, 16),
+    (1, 2, 'LIMOUSINE', N'Limousine Executive', N'Phục vụ doanh nhân, yên tĩnh và sang trọng', N'Hà Nội - Sầm Sơn', '2025-01-15 07:30:00', 850000.00, 9),
+    (1, 2, 'LIMOUSINE', N'Limousine 11 chỗ', N'Đưa đón tận nơi, có wifi', N'Hà Nội - Sầm Sơn', '2025-01-16 09:00:00', 950000.00, 11),
+    (1, 2, 'SELF', N'Toyota Corolla Altis', N'Xe tự lái, tiết kiệm nhiên liệu', N'Hà Nội - Sầm Sơn', '2025-01-17 08:00:00', 700000.00, 4),
+    (1, 2, 'SELF', N'VinFast VF e34', N'Xe điện tự lái, thân thiện môi trường', N'Hà Nội - Sầm Sơn', '2025-01-18 10:00:00', 900000.00, 4),
+    (1, 2, 'SELF', N'Kia Morning', N'Xe nhỏ gọn, dễ di chuyển trong thành phố', N'Hà Nội - Sầm Sơn', '2025-01-19 07:45:00', 500000.00, 4),
+    (1, 2, 'SELF', N'Mazda CX5', N'Xe SUV tự lái cao cấp, phù hợp du lịch', N'Hà Nội - Sầm Sơn', '2025-01-20 08:15:00', 1200000.00, 5);
 
 -- 3.6. Insert phòng cho khách sạn đầu tiên
 INSERT INTO Rooms (hotel_id, room_type, price, total_rooms, available_rooms) VALUES 
@@ -509,12 +511,12 @@ SELECT id, name, image_url, featured, rating FROM Hotels ORDER BY id;
 -- Database đã được tạo thành công!
 -- Bạn có thể bắt đầu sử dụng ứng dụng.
 
--- Insert service categories
-INSERT INTO ServiceCategories (category_code, category_name) VALUES 
-    ('HOTEL', N'Dịch vụ khách sạn'),
-    ('TRANSPORT', N'Dịch vụ vận chuyển'),
-    ('MEAL', N'Dịch vụ ăn uống'),
-    ('WELLNESS', N'Dịch vụ spa & wellness');
+-- Insert service categories - already inserted above at line 382
+-- INSERT INTO ServiceCategories (category_code, category_name) VALUES 
+--     ('HOTEL', N'Dịch vụ khách sạn'),
+--     ('TRANSPORT', N'Dịch vụ vận chuyển'),
+--     ('MEAL', N'Dịch vụ ăn uống'),
+--     ('WELLNESS', N'Dịch vụ spa & wellness');
 
 -- Note: Sample hotel and rooms will be inserted in comprehensive data section below
 
@@ -555,19 +557,21 @@ VALUES
 -- ===========================================
 
 -- Add icons and display order to ServiceCategories
-ALTER TABLE ServiceCategories ADD 
-    icon_class NVARCHAR(100),
-    display_order INT DEFAULT 0,
-    description NVARCHAR(500);
-GO
+-- NOTE: These columns already exist in CREATE TABLE (line 150-152), so this ALTER is not needed
+-- ALTER TABLE ServiceCategories ADD 
+--     icon_class NVARCHAR(100),
+--     display_order INT DEFAULT 0,
+--     description NVARCHAR(500);
+-- GO
 
 -- Add more fields to Hotels
-ALTER TABLE Hotels ADD 
-    rating DECIMAL(3,2) DEFAULT 0,
-    featured BIT DEFAULT 0,
-    amenities NVARCHAR(MAX),
-    check_in_time TIME DEFAULT '14:00:00',
-    check_out_time TIME DEFAULT '12:00:00';
+-- NOTE: These columns already exist in CREATE TABLE (line 162-167), so this ALTER is not needed
+-- ALTER TABLE Hotels ADD 
+--     rating DECIMAL(3,2) DEFAULT 0,
+--     featured BIT DEFAULT 0,
+--     amenities NVARCHAR(MAX),
+--     check_in_time TIME DEFAULT '14:00:00',
+--     check_out_time TIME DEFAULT '12:00:00';
 
 -- Extend Bookings with date-based fields and booking code
 ALTER TABLE Bookings ADD 
@@ -611,13 +615,13 @@ CHECK (status IN ('PENDING','PAID','FAILED','REFUNDED','EXPIRED'));
 ALTER TABLE Payments CHECK CONSTRAINT CK_Payments_Status;
 GO
 
--- Create Booking_Addons for itemized meal/wellness selections
+-- Create Booking_Addons for itemized meal/wellness/transport selections
 IF OBJECT_ID('Booking_Addons','U') IS NULL
 BEGIN
     CREATE TABLE Booking_Addons (
         addon_id INT IDENTITY(1,1) PRIMARY KEY,
         booking_id INT NOT NULL,
-        addon_type NVARCHAR(20) NOT NULL CHECK (addon_type IN ('MEAL','WELLNESS')),
+        addon_type NVARCHAR(20) NOT NULL CHECK (addon_type IN ('MEAL','WELLNESS','TRANSPORT')),
         reference_id INT NOT NULL,
         name NVARCHAR(150) NOT NULL,
         unit_price DECIMAL(10,2) NOT NULL,
@@ -628,6 +632,28 @@ BEGIN
             ON DELETE CASCADE ON UPDATE CASCADE
     );
     CREATE INDEX IX_Booking_Addons_BookingId ON Booking_Addons(booking_id);
+END
+ELSE
+BEGIN
+    -- Update existing constraint to include TRANSPORT if table already exists
+    -- Find and drop existing constraint
+    DECLARE @constraintName NVARCHAR(128);
+    SELECT @constraintName = cc.name
+    FROM sys.check_constraints cc
+    JOIN sys.columns c ON cc.parent_object_id = c.object_id AND c.column_id = cc.parent_column_id
+    WHERE cc.parent_object_id = OBJECT_ID('Booking_Addons')
+      AND c.name = 'addon_type';
+    
+    IF @constraintName IS NOT NULL 
+    BEGIN
+        DECLARE @sql NVARCHAR(MAX) = 'ALTER TABLE Booking_Addons DROP CONSTRAINT ' + QUOTENAME(@constraintName);
+        EXEC sp_executesql @sql;
+    END
+    
+    -- Add new constraint with TRANSPORT
+    ALTER TABLE Booking_Addons 
+    ADD CONSTRAINT CK_Booking_Addons_addon_type 
+    CHECK (addon_type IN ('MEAL','WELLNESS','TRANSPORT'));
 END
 
 -- ===========================================
@@ -736,10 +762,10 @@ INSERT INTO Wellness_Services (hotel_id, category_id, service_name, description,
 (1, 4, N'Massage chân bằng đá nóng', N'Massage chân kết hợp đá bóng nóng giúp kích thích huyệt đạo, giảm nhức mỏi.', 99000, 30, N'09:00–22:00', 6,N'Imagewellness/massagechanbangdanong.jpg', 'ACTIVE'),
 (1, 4, N'Lớp học Yoga', N'Lớp yoga ngoài trời giúp khởi động ngày mới, tăng cường sức khỏe và tinh thần.', 99000, 60, N'06:00–07:30', 20,N'Imagewellness/lophocyoga.jpg', 'ACTIVE');
 
--- Insert sample admin user for testing (password: admin123) - must be before Tour_Media
-INSERT INTO Users (name, password, email, phone, gender, address, role_id, status) VALUES 
-    ('Admin User', 'admin123', 'admin@samsontravel.com', '0123456789', 'male', N'Hà Nội', 1, 'active');
-GO
+-- Insert sample admin user for testing (password: admin123) - already inserted above at line 390
+-- INSERT INTO Users (name, password, email, phone, gender, address, role_id, status) VALUES 
+--     ('Admin User', 'admin123', 'admin@samsontravel.com', '0123456789', 'male', N'Hà Nội', 1, 'active');
+-- GO
 
 -- Insert comprehensive tour media (now user_id=1 exists)
 INSERT INTO Tour_Media (section, title, description, media_type, file_url, uploaded_by, status) VALUES 

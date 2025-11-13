@@ -49,6 +49,17 @@ public class BookingBackServlet extends HttpServlet {
             session.removeAttribute("booking_wellness_qtys");
         }
         
+        // Lưu transport selection (multiple transports)
+        String[] transportIds = request.getParameterValues("transport_id");
+        String[] transportQtys = request.getParameterValues("transport_qty");
+        if (transportIds != null && transportQtys != null) {
+            session.setAttribute("booking_transport_ids", transportIds);
+            session.setAttribute("booking_transport_qtys", transportQtys);
+        } else {
+            session.removeAttribute("booking_transport_ids");
+            session.removeAttribute("booking_transport_qtys");
+        }
+        
         // Redirect về trang booking form
         String hotelId = request.getParameter("hotel");
         response.sendRedirect(request.getContextPath() + "/bookings?hotel=" + hotelId);
