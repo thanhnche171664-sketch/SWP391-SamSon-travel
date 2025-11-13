@@ -278,6 +278,11 @@
 <body>
     <div class="profile-container">
         <div class="profile-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="${pageContext.request.contextPath}/home" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại trang chủ
+                </a>
+            </div>
             <div class="profile-header">
                 <h2 class="mb-4"><i class="fas fa-user-circle"></i> Hồ sơ cá nhân</h2>
                 
@@ -357,18 +362,33 @@
                 <form id="passwordForm" onsubmit="changePassword(event)">
                     <div class="form-group">
                         <label class="form-label">Mật khẩu hiện tại</label>
-                        <input type="password" class="form-control" id="currentPassword" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <button type="button" class="btn btn-secondary" onclick="togglePassword('currentPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Mật khẩu mới</label>
-                        <input type="password" class="form-control" id="newPassword" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <button type="button" class="btn btn-secondary" onclick="togglePassword('newPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                         <small class="text-muted">Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt</small>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Xác nhận mật khẩu mới</label>
-                        <input type="password" class="form-control" id="confirmPassword" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <button type="button" class="btn btn-secondary" onclick="togglePassword('confirmPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
@@ -537,16 +557,30 @@
                 const newPassword = document.getElementById('newPassword').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
 
-                const formData = new FormData();
-                formData.append('currentPassword', currentPassword);
-                formData.append('newPassword', newPassword);
-                formData.append('confirmPassword', confirmPassword);
+                const params = new URLSearchParams();
+                params.append('currentPassword', currentPassword);
+                params.append('newPassword', newPassword);
+                params.append('confirmPassword', confirmPassword);
 
                 fetch('${pageContext.request.contextPath}/change-password', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: params,
+                    redirect: 'manual'
                 })
                 .then(response => {
+                    if (response.status === 401) {
+                        showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+                        setTimeout(() => {
+                            const returnUrl = encodeURIComponent(window.location.pathname);
+                            window.location.href = '${pageContext.request.contextPath}/login?returnUrl=' + returnUrl;
+                        }, 800);
+                        throw new Error('Unauthorized');
+                    }
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -567,6 +601,18 @@
             } catch (error) {
                 console.error('Error:', error);
                 showToast('Có lỗi xảy ra khi đổi mật khẩu', 'error');
+            }
+        }
+
+        function togglePassword(inputId, buttonEl) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            const icon = buttonEl && buttonEl.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
             }
         }
 

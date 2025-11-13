@@ -41,8 +41,8 @@ public class BookingDAO {
     private static final String GET_BOOKING_DETAILS = 
         "SELECT bd.id, bd.booking_id, bd.category_id, bd.quantity, bd.price, " +
         "sc.category_name " +
-        "FROM booking_details bd " +
-        "INNER JOIN service_categories sc ON bd.category_id = sc.category_id " +
+        "FROM Booking_Details bd " +
+        "INNER JOIN ServiceCategories sc ON bd.category_id = sc.category_id " +
         "WHERE bd.booking_id = ?";
     
     private static final String GET_BOOKING_COUNT_BY_USER_ID = 

@@ -81,7 +81,15 @@ public class AuthFilter implements Filter {
         
         // Check if user is logged in
         if (session == null || session.getAttribute(USER_SESSION_ATTR) == null) {
-            LOGGER.info("No active session, redirecting to login: " + path);
+            LOGGER.info("No active session, handling unauthenticated request: " + path);
+            if (isAjaxRequest(httpRequest)) {
+                // Return JSON 401 for AJAX requests to avoid HTML redirect breaking JSON parsing
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setContentType("application/json");
+                httpResponse.setCharacterEncoding("UTF-8");
+                httpResponse.getWriter().write("{\"success\": false, \"message\": \"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.\"}");
+                return;
+            }
             redirectToLogin(httpRequest, httpResponse, path);
             return;
         }
@@ -91,8 +99,15 @@ public class AuthFilter implements Filter {
         Role role = (Role) session.getAttribute(ROLE_SESSION_ATTR);
         
         if (user == null || role == null) {
-            LOGGER.warning("Invalid session data, redirecting to login: " + path);
+            LOGGER.warning("Invalid session data, redirecting to login or returning 401 (AJAX): " + path);
             session.invalidate();
+            if (isAjaxRequest(httpRequest)) {
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setContentType("application/json");
+                httpResponse.setCharacterEncoding("UTF-8");
+                httpResponse.getWriter().write("{\"success\": false, \"message\": \"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.\"}");
+                return;
+            }
             redirectToLogin(httpRequest, httpResponse, path);
             return;
         }
@@ -101,6 +116,13 @@ public class AuthFilter implements Filter {
         if (!"active".equals(user.getStatus())) {
             LOGGER.warning("Inactive user attempting to access protected resource: " + user.getEmail());
             session.invalidate();
+            if (isAjaxRequest(httpRequest)) {
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setContentType("application/json");
+                httpResponse.setCharacterEncoding("UTF-8");
+                httpResponse.getWriter().write("{\"success\": false, \"message\": \"Tài khoản không hoạt động. Vui lòng đăng nhập lại.\"}");
+                return;
+            }
             redirectToLogin(httpRequest, httpResponse, path);
             return;
         }
@@ -166,7 +188,7 @@ public class AuthFilter implements Filter {
         
         switch (normalizedRoleName) {
             case SERVICE_MANAGER_ROLE:
-                return path.startsWith("/service-manager/") || 
+                return path.startsWith("/wellness-list") || 
                        path.startsWith("/customer/") ||
                        path.equals("/dashboard.jsp") ||
                        path.equals("/profile.jsp") ||
@@ -225,6 +247,18 @@ public class AuthFilter implements Filter {
             throws IOException {
         
         response.sendRedirect(request.getContextPath() + "/access-denied.jsp");
+    }
+    
+    /**
+     * Detect AJAX/JSON requests
+     */
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        String requestedWith = request.getHeader("X-Requested-With");
+        if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {
+            return true;
+        }
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.toLowerCase().contains("application/json");
     }
     
     /**

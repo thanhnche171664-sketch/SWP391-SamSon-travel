@@ -122,7 +122,6 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
     }
 
     public boolean addWellnessService(WellnessService ws) {
-        // ĐÃ THÊM image_url
         String sql = """
             INSERT INTO Wellness_Services 
             (hotel_id, category_id, service_name, description, base_price, 
@@ -139,7 +138,6 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             ps.setString(4, ws.getDescription());
             ps.setDouble(5, ws.getBasePrice());
 
-            // entity dùng int -> 0 nghĩa là không nhập
             if (ws.getDurationMinutes() > 0) {
                 ps.setInt(6, ws.getDurationMinutes());
             } else {
@@ -157,10 +155,8 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
                 ps.setNull(8, Types.INTEGER);
             }
 
-            // image_url
             ps.setString(9, ws.getImageUrl());
 
-            // status
             String status = (ws.getStatus() != null) ? ws.getStatus().toUpperCase() : "ACTIVE";
             ps.setString(10, status);
 
@@ -173,7 +169,6 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
     }
 
     public boolean updateWellnessService(WellnessService ws) {
-        // ĐÃ THÊM image_url
         String sql = """
             UPDATE Wellness_Services
                SET hotel_id = ?, 

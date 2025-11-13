@@ -63,14 +63,12 @@
                     </a>
                 </div>
 
-                <!-- Ô tìm kiếm -->
                 <form method="get" action="wellness-search" class="d-flex mb-3 search-box">
                     <input type="text" name="search" class="form-control" placeholder="Tìm theo tên dịch vụ..."
                            value=${keyword}>
                     <button class="btn btn-success px-4" type="submit">Tìm kiếm</button>
                 </form>
 
-                <!-- Bộ lọc trạng thái -->
                 <form method="get" action="wellness-list" class="mb-3 d-flex align-items-center gap-2">
                     <label class="form-label mb-0 fw-semibold">Trạng thái:</label>
                     <select name="status" class="form-select w-auto" onchange="this.form.submit()">
@@ -80,7 +78,6 @@
                     </select>
                 </form>
 
-                <!-- Bảng dữ liệu -->
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
@@ -129,7 +126,6 @@
                     </table>
                 </div>
 
-                <!-- Phân trang -->
                 <nav class="d-flex justify-content-center mt-4">
                     <ul class="pagination">
                         <c:forEach begin="1" end="${totalPages}" var="i">
@@ -143,7 +139,6 @@
             </div>
         </div>
 
-        <!-- Bootstrap & icon -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </body>

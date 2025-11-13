@@ -86,7 +86,6 @@ public class WellnessServiceController extends HttpServlet {
         }
     }
 
-    // Hiển thị danh sách tất cả wellness services
     private void listWellnessServices(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<WellnessService> services = wellnessServiceDAO.getAll(1, 5, "all");
@@ -94,7 +93,6 @@ public class WellnessServiceController extends HttpServlet {
         request.getRequestDispatcher("/wellness_list.jsp").forward(request, response);
     }
 
-    // Xem chi tiết một wellness service
     private void viewWellnessService(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int wellnessId = Integer.parseInt(request.getParameter("id"));
@@ -109,13 +107,11 @@ public class WellnessServiceController extends HttpServlet {
         }
     }
 
-    // Hiển thị form thêm wellness service
     private void addWellnessService(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if (request.getMethod().equals("GET")) {
             request.getRequestDispatcher("/wellness_form.jsp").forward(request, response);
         } else if (request.getMethod().equals("POST")) {
-            // Xử lý thêm wellness service mới
             try {
                 int hotelId = Integer.parseInt(request.getParameter("hotelId"));
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
@@ -155,7 +151,6 @@ public class WellnessServiceController extends HttpServlet {
         }
     }
 
-    // Xử lý thêm wellness service mới
     private void editWellnessService(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int wellnessId = Integer.parseInt(request.getParameter("id"));
@@ -171,7 +166,6 @@ public class WellnessServiceController extends HttpServlet {
         }
     }
 
-    // Xử lý cập nhật wellness service
     private void updateWellnessService(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
@@ -213,7 +207,6 @@ public class WellnessServiceController extends HttpServlet {
         }
     }
 
-    // Xử lý xóa wellness service
     private void deleteWellnessService(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int wellnessId = Integer.parseInt(request.getParameter("id"));
