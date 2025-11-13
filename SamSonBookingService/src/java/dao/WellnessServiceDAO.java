@@ -14,6 +14,28 @@ import java.util.List;
 public class WellnessServiceDAO {
     private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.getName());
 
+    // Lấy tất cả wellness services đang active (không phân trang)
+    public List<WellnessService> getAllActiveWellnessServices() {
+        List<WellnessService> list = new ArrayList<>();
+        String sql = "SELECT * FROM Wellness_Services WHERE status = 'ACTIVE' ORDER BY wellness_id DESC";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSet(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[getAllActiveWellnessServices] SQL Error: {0}", e.getMessage());
+            System.err.println("WellnessServiceDAO: Lỗi khi lấy danh sách wellness services: " + e.getMessage());
+        }
+
+        return list;
+    }
+    
     public List<WellnessService> getAll(int page, int pageSize, String statusFilter) {
         List<WellnessService> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM Wellness_Services WHERE 1=1");

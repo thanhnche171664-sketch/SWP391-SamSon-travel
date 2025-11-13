@@ -24,7 +24,7 @@ public class TransportServiceDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                list.add(mapResultSet(rs));
+                list.add(mapResultSetSafe(rs));
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "[getAll] SQL Error: {0}", e.getMessage());
@@ -39,13 +39,110 @@ public class TransportServiceDAO {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSet(rs);
+                    return mapResultSetSafe(rs);
                 }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "[getById] SQL Error: {0}", e.getMessage());
         }
         return null;
+    }
+
+    public List<TransportService> getTransportServicesByHotelId(int hotelId) {
+        List<TransportService> list = new ArrayList<>();
+        
+        // Thử lấy transport services có hotel_id = ? hoặc hotel_id IS NULL
+        // Nếu lỗi do cột hotel_id không tồn tại, sẽ fallback về lấy tất cả
+        String sql = "SELECT * FROM TransportServices WHERE hotel_id = ? OR hotel_id IS NULL ORDER BY vehicle_type, price";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, hotelId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetSafe(rs));
+                }
+            }
+        } catch (SQLException e) {
+            // Nếu lỗi do cột hotel_id không tồn tại, lấy tất cả transport services
+            if (e.getMessage() != null && e.getMessage().contains("hotel_id")) {
+                LOGGER.log(Level.WARNING, "[getTransportServicesByHotelId] Column hotel_id does not exist, fetching all transports: {0}", e.getMessage());
+            } else {
+                LOGGER.log(Level.SEVERE, "[getTransportServicesByHotelId] SQL Error: {0}", e.getMessage());
+            }
+        }
+        
+        // Nếu không có cột hotel_id hoặc query trên trả về rỗng, lấy tất cả transport services
+        if (list.isEmpty()) {
+            String fallbackSql = "SELECT * FROM TransportServices ORDER BY vehicle_type, price";
+            try (Connection conn = DBContext.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(fallbackSql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetSafe(rs));
+                }
+                LOGGER.log(Level.INFO, "[getTransportServicesByHotelId] Loaded {0} transport services (fallback mode)", list.size());
+            } catch (SQLException ex) {
+                LOGGER.log(Level.SEVERE, "[getTransportServicesByHotelId] Fallback SQL Error: {0}", ex.getMessage());
+            }
+        } else {
+            LOGGER.log(Level.INFO, "[getTransportServicesByHotelId] Loaded {0} transport services for hotel {1}", new Object[]{list.size(), hotelId});
+        }
+        
+        return list;
+    }
+    
+    /**
+     * Kiểm tra xem cột có tồn tại trong bảng không
+     */
+    private boolean checkColumnExists(String tableName, String columnName) {
+        String sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tableName);
+            ps.setString(2, columnName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "[checkColumnExists] Error checking column: {0}", e.getMessage());
+            return false;
+        }
+        return false;
+    }
+    
+    /**
+     * Map ResultSet an toàn, xử lý trường hợp cột hotel_id không tồn tại
+     */
+    private TransportService mapResultSetSafe(ResultSet rs) throws SQLException {
+        int hotelId = 0;
+        try {
+            hotelId = rs.getInt("hotel_id");
+            if (rs.wasNull()) {
+                hotelId = 0; // Default value if NULL
+            }
+        } catch (SQLException e) {
+            // Cột hotel_id không tồn tại, sử dụng giá trị mặc định
+            hotelId = 0;
+        }
+        
+        return new TransportService(
+                rs.getInt("transport_id"),
+                hotelId,
+                rs.getInt("category_id"),
+                rs.getString("vehicle_type"),
+                rs.getString("vehicle_name"),
+                rs.getString("description"),
+                rs.getString("pickup_location"),
+                rs.getTimestamp("departure_time"),
+                rs.getDouble("price"),
+                rs.getInt("capacity"),
+                rs.getInt("current_passengers"),
+                rs.getString("image"),
+                rs.getTimestamp("created_at"),
+                rs.getTimestamp("updated_at")
+        );
     }
 
     public boolean insert(TransportService ts) {
@@ -127,22 +224,8 @@ public class TransportServiceDAO {
     }
 
     private TransportService mapResultSet(ResultSet rs) throws SQLException {
-        return new TransportService(
-                rs.getInt("transport_id"),
-                rs.getInt("hotel_id"),
-                rs.getInt("category_id"),
-                rs.getString("vehicle_type"),
-                rs.getString("vehicle_name"),
-                rs.getString("description"),
-                rs.getString("pickup_location"),
-                rs.getTimestamp("departure_time"),
-                rs.getDouble("price"),
-                rs.getInt("capacity"),
-                rs.getInt("current_passengers"),
-                rs.getString("image"),
-                rs.getTimestamp("created_at"),
-                rs.getTimestamp("updated_at")
-        );
+        // Sử dụng mapResultSetSafe để xử lý an toàn
+        return mapResultSetSafe(rs);
     }
 
     public List<TransportService> search(String keyword) {
@@ -158,7 +241,7 @@ public class TransportServiceDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapResultSet(rs));
+                    list.add(mapResultSetSafe(rs));
                 }
             }
         } catch (SQLException e) {
@@ -232,7 +315,7 @@ public class TransportServiceDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapResultSet(rs)); 
+                    list.add(mapResultSetSafe(rs)); 
                 }
             }
 

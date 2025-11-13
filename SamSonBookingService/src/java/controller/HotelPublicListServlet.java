@@ -7,9 +7,7 @@
 package controller;
 
 import dao.HotelDAO;
-import dao.ImageDAO;
 import entity.Hotel;
-import entity.Image;
 import entity.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,9 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +30,6 @@ public class HotelPublicListServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(HotelPublicListServlet.class.getName());
     
     private final HotelDAO hotelDAO = new HotelDAO();
-    private final ImageDAO imageDAO = new ImageDAO();
     
     /**
      * Handles GET requests to display hotel list
@@ -65,40 +60,15 @@ public class HotelPublicListServlet extends HttpServlet {
                 hotels = hotelDAO.getAllHotels();
             }
             
-            // Load images for each hotel from Images table
-            Map<Integer, String> hotelImages = new HashMap<>();
+            // Debug: Log hotel image URLs
             for (Hotel hotel : hotels) {
-                Image primaryImage = imageDAO.getPrimaryImage("hotel", hotel.getId());
-                if (primaryImage != null) {
-                    String imageUrl = primaryImage.getImageUrl();
-                    LOGGER.info("Hotel ID " + hotel.getId() + " (" + hotel.getName() + ") - Image URL: " + imageUrl);
-                    hotelImages.put(hotel.getId(), imageUrl);
-                } else {
-                    // If no primary image, get first image
-                    Image firstImage = imageDAO.getFirstImage("hotel", hotel.getId());
-                    if (firstImage != null) {
-                        String imageUrl = firstImage.getImageUrl();
-                        LOGGER.info("Hotel ID " + hotel.getId() + " (" + hotel.getName() + ") - First Image URL: " + imageUrl);
-                        hotelImages.put(hotel.getId(), imageUrl);
-                    } else {
-                        // Default image if no image found
-                        LOGGER.warning("Hotel ID " + hotel.getId() + " (" + hotel.getName() + ") - No image found, using default");
-                        hotelImages.put(hotel.getId(), "assets/images/hotels/default-hotel.jpg");
-                    }
-                }
-            }
-            
-            // Debug: Log all hotel images
-            LOGGER.info("Total hotels with images: " + hotelImages.size());
-            for (Map.Entry<Integer, String> entry : hotelImages.entrySet()) {
-                LOGGER.info("  Hotel " + entry.getKey() + ": " + entry.getValue());
+                LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + ", ImageUrl: " + hotel.getImageUrl());
             }
             
             // Set request attributes
             request.setAttribute("currentUser", currentUser);
             request.setAttribute("userRole", userRole);
             request.setAttribute("hotels", hotels);
-            request.setAttribute("hotelImages", hotelImages);
             request.setAttribute("searchKeyword", searchKeyword != null ? searchKeyword : "");
             request.setAttribute("totalHotels", hotels.size());
             

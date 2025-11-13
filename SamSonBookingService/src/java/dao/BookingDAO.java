@@ -57,10 +57,212 @@ public class BookingDAO {
 
     private static final String INSERT_BOOKING =
         "INSERT INTO Bookings (user_id, hotel_id, room_type, number_of_rooms, transport_id, transport_fee, total_price, booking_date, booking_source, created_by, status, check_in_date, check_out_date, num_adults, num_children, booking_code, created_at, updated_at) " +
-        "VALUES (?, ?, ?, ?, NULL, 0, ?, GETDATE(), 'ONLINE', ?, 'pending', ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), 'ONLINE', ?, 'pending', ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
 
     private static final String INSERT_ADDON =
         "INSERT INTO Booking_Addons (booking_id, addon_type, reference_id, name, unit_price, quantity) VALUES (?,?,?,?,?,?)";
+    
+    // SQL query để lưu booking offline
+    private static final String INSERT_OFFLINE_BOOKING =
+        "INSERT INTO Bookings (user_id, hotel_id, room_type, number_of_rooms, transport_id, transport_fee, total_price, booking_date, booking_source, created_by, status, check_in_date, check_out_date, num_adults, num_children, booking_code, notes, created_at, updated_at) " +
+        "VALUES (NULL, ?, ?, ?, NULL, 0, ?, GETDATE(), 'OFFLINE', ?, 'confirmed', ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+    
+    // SQL query để lưu booking detail (dịch vụ)
+    private static final String INSERT_BOOKING_DETAIL =
+        "INSERT INTO Booking_Details (booking_id, category_id, quantity, price) VALUES (?, ?, ?, ?)";
+    
+    // SQL query để lấy tất cả booking offline
+    private static final String GET_ALL_OFFLINE_BOOKINGS =
+        "SELECT b.id, b.user_id, b.hotel_id, b.room_type, b.number_of_rooms, b.transport_id, " +
+        "b.transport_fee, b.total_price, b.booking_date, b.booking_source, b.created_by, " +
+        "b.status, b.created_at, b.updated_at, b.check_in_date, b.check_out_date, b.booking_code " +
+        "FROM Bookings b " +
+        "LEFT JOIN Hotels h ON b.hotel_id = h.id " +
+        "WHERE b.booking_source = 'OFFLINE' " +
+        "ORDER BY b.booking_date DESC";
+    
+    /**
+     * Lưu booking offline vào database
+     * 
+     * @param booking Đối tượng Booking cần lưu
+     * @param checkinDate Ngày check-in (String format: yyyy-MM-dd)
+     * @param checkoutDate Ngày check-out (String format: yyyy-MM-dd)
+     * @param numAdults Số người lớn
+     * @param numChildren Số trẻ em
+     * @param bookingCode Mã booking
+     * @param notes Ghi chú
+     * @param serviceCart Danh sách dịch vụ (List<Map<String, Object>>)
+     * @return ID của booking vừa được tạo, -1 nếu lỗi
+     */
+    public int saveOfflineBooking(Booking booking, String checkinDate, String checkoutDate, 
+                                   int numAdults, int numChildren, String bookingCode, 
+                                   String notes, java.util.List<java.util.Map<String, Object>> serviceCart) {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+            
+            // Parse ngày tháng
+            java.sql.Date checkin = null;
+            java.sql.Date checkout = null;
+            try {
+                if (checkinDate != null && !checkinDate.isEmpty()) {
+                    checkin = java.sql.Date.valueOf(checkinDate);
+                }
+                if (checkoutDate != null && !checkoutDate.isEmpty()) {
+                    checkout = java.sql.Date.valueOf(checkoutDate);
+                }
+            } catch (IllegalArgumentException e) {
+                LOGGER.warning("Invalid date format: " + e.getMessage());
+            }
+            
+            // Lưu booking
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_OFFLINE_BOOKING, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setObject(1, booking.getHotelId());
+                ps.setString(2, booking.getRoomType());
+                ps.setInt(3, booking.getNumberOfRooms());
+                ps.setDouble(4, booking.getTotalPrice());
+                ps.setObject(5, booking.getCreatedBy()); // ID của nhân viên tạo booking
+                ps.setDate(6, checkin);
+                ps.setDate(7, checkout);
+                ps.setInt(8, numAdults);
+                ps.setInt(9, numChildren);
+                ps.setString(10, bookingCode);
+                ps.setString(11, notes);
+                
+                LOGGER.info(String.format(
+                    "Executing INSERT_OFFLINE_BOOKING with hotelId=%s, roomType=%s, numberOfRooms=%d, totalPrice=%.2f, createdBy=%s, checkin=%s, checkout=%s, adults=%d, children=%d, bookingCode=%s",
+                    booking.getHotelId(),
+                    booking.getRoomType(),
+                    booking.getNumberOfRooms(),
+                    booking.getTotalPrice(),
+                    booking.getCreatedBy(),
+                    checkin,
+                    checkout,
+                    numAdults,
+                    numChildren,
+                    bookingCode
+                ));
+                
+                int affected = ps.executeUpdate();
+                if (affected == 0) {
+                    throw new SQLException("Insert booking failed");
+                }
+                
+                // Lấy ID vừa được tạo
+                int bookingId;
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        bookingId = keys.getInt(1);
+                        LOGGER.info("Generated booking ID: " + bookingId);
+                    } else {
+                        throw new SQLException("No booking id generated");
+                    }
+                }
+                
+                // Lưu booking details (dịch vụ) nếu có
+                if (serviceCart != null && !serviceCart.isEmpty()) {
+                    try (PreparedStatement psDetail = conn.prepareStatement(INSERT_BOOKING_DETAIL)) {
+                        for (java.util.Map<String, Object> service : serviceCart) {
+                            int categoryId = getIntValue(service, "categoryId");
+                            int quantity = getIntValue(service, "quantity");
+                            double price = getDoubleValue(service, "price", 0);
+                            
+                            // Nếu không có categoryId, thử lấy từ id hoặc serviceId
+                            if (categoryId == 0) {
+                                categoryId = getIntValue(service, "id");
+                                if (categoryId == 0) {
+                                    categoryId = getIntValue(service, "serviceId");
+                                }
+                            }
+                            
+                            if (categoryId > 0 && quantity > 0) {
+                                psDetail.setInt(1, bookingId);
+                                psDetail.setInt(2, categoryId);
+                                psDetail.setInt(3, quantity);
+                                psDetail.setDouble(4, price);
+                                psDetail.addBatch();
+                            }
+                        }
+                        psDetail.executeBatch();
+                    }
+                }
+                
+                conn.commit();
+                LOGGER.info("Saved offline booking with ID: " + bookingId);
+                return bookingId;
+            }
+            
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {}
+            }
+            LOGGER.log(Level.SEVERE, "Error saving offline booking", e);
+            System.err.println("Lỗi lưu booking offline: " + e.getMessage());
+            throw new RuntimeException("Lỗi lưu booking offline: " + e.getMessage(), e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {}
+            }
+        }
+    }
+    
+    /**
+     * Lấy tất cả booking offline từ database
+     * 
+     * @return Danh sách booking offline
+     */
+    public List<Booking> getAllOfflineBookings() {
+        List<Booking> bookings = new ArrayList<>();
+        
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(GET_ALL_OFFLINE_BOOKINGS)) {
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Booking booking = mapResultSetToBooking(resultSet);
+                    bookings.add(booking);
+                }
+            }
+            
+            LOGGER.info("Retrieved " + bookings.size() + " offline bookings");
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving offline bookings", e);
+        }
+        
+        return bookings;
+    }
+    
+    // Hàm hỗ trợ để lấy giá trị int từ Map
+    private int getIntValue(java.util.Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value == null) return 0;
+        if (value instanceof Integer) return (Integer) value;
+        try {
+            return Integer.parseInt(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
+    // Hàm hỗ trợ để lấy giá trị double từ Map
+    private double getDoubleValue(java.util.Map<String, Object> map, String key, double defaultValue) {
+        Object value = map.get(key);
+        if (value == null) return defaultValue;
+        if (value instanceof Double) return (Double) value;
+        if (value instanceof Integer) return (Integer) value;
+        try {
+            return Double.parseDouble(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
     
     /**
      * Get bookings by user ID with pagination
@@ -218,19 +420,80 @@ public class BookingDAO {
     private Booking mapResultSetToBooking(ResultSet resultSet) throws SQLException {
         Booking booking = new Booking();
         booking.setId(resultSet.getInt("id"));
-        booking.setUserId(resultSet.getInt("user_id"));
+        
+        // user_id có thể null
+        int userId = resultSet.getInt("user_id");
+        if (!resultSet.wasNull()) {
+            booking.setUserId(userId);
+        }
+        
         booking.setHotelId(resultSet.getInt("hotel_id"));
         booking.setRoomType(resultSet.getString("room_type"));
         booking.setNumberOfRooms(resultSet.getInt("number_of_rooms"));
-        booking.setTransportId(resultSet.getInt("transport_id"));
+        
+        // transport_id có thể null
+        int transportId = resultSet.getInt("transport_id");
+        if (!resultSet.wasNull()) {
+            booking.setTransportId(transportId);
+        }
+        
         booking.setTransportFee(resultSet.getDouble("transport_fee"));
         booking.setTotalPrice(resultSet.getDouble("total_price"));
-        booking.setBookingDate(new Date(resultSet.getTimestamp("booking_date").getTime()));
+        
+        Timestamp bookingDate = resultSet.getTimestamp("booking_date");
+        if (bookingDate != null) {
+            booking.setBookingDate(new Date(bookingDate.getTime()));
+        }
+        
         booking.setBookingSource(resultSet.getString("booking_source"));
-        booking.setCreatedBy(resultSet.getInt("created_by"));
+        
+        // created_by có thể null
+        int createdBy = resultSet.getInt("created_by");
+        if (!resultSet.wasNull()) {
+            booking.setCreatedBy(createdBy);
+        }
+        
         booking.setStatus(resultSet.getString("status"));
-        booking.setCreatedAt(new Date(resultSet.getTimestamp("created_at").getTime()));
-        booking.setUpdatedAt(new Date(resultSet.getTimestamp("updated_at").getTime()));
+        
+        Timestamp createdAt = resultSet.getTimestamp("created_at");
+        if (createdAt != null) {
+            booking.setCreatedAt(new Date(createdAt.getTime()));
+        }
+        
+        Timestamp updatedAt = resultSet.getTimestamp("updated_at");
+        if (updatedAt != null) {
+            booking.setUpdatedAt(new Date(updatedAt.getTime()));
+        }
+        
+        // check_in_date và check_out_date
+        try {
+            java.sql.Date checkInDate = resultSet.getDate("check_in_date");
+            if (checkInDate != null) {
+                booking.setCheckInDate(new Date(checkInDate.getTime()));
+            }
+        } catch (SQLException e) {
+            // Trường có thể không tồn tại trong một số query
+        }
+        
+        try {
+            java.sql.Date checkOutDate = resultSet.getDate("check_out_date");
+            if (checkOutDate != null) {
+                booking.setCheckOutDate(new Date(checkOutDate.getTime()));
+            }
+        } catch (SQLException e) {
+            // Trường có thể không tồn tại trong một số query
+        }
+        
+        // booking_code
+        try {
+            String bookingCode = resultSet.getString("booking_code");
+            if (bookingCode != null) {
+                booking.setBookingCode(bookingCode);
+            }
+        } catch (SQLException e) {
+            // Trường có thể không tồn tại trong một số query
+        }
+        
         return booking;
     }
 
@@ -268,13 +531,15 @@ public class BookingDAO {
                 ps.setObject(2, booking.getHotelId());
                 ps.setString(3, booking.getRoomType());
                 ps.setInt(4, booking.getNumberOfRooms());
-                ps.setDouble(5, booking.getTotalPrice());
-                ps.setObject(6, booking.getCreatedBy());
-                ps.setDate(7, java.sql.Date.valueOf(checkIn));
-                ps.setDate(8, java.sql.Date.valueOf(checkOut));
-                ps.setInt(9, numAdults);
-                ps.setInt(10, numChildren);
-                ps.setString(11, bookingCode);
+                ps.setObject(5, booking.getTransportId());
+                ps.setDouble(6, booking.getTransportFee());
+                ps.setDouble(7, booking.getTotalPrice());
+                ps.setObject(8, booking.getCreatedBy());
+                ps.setDate(9, java.sql.Date.valueOf(checkIn));
+                ps.setDate(10, java.sql.Date.valueOf(checkOut));
+                ps.setInt(11, numAdults);
+                ps.setInt(12, numChildren);
+                ps.setString(13, bookingCode);
                 int affected = ps.executeUpdate();
                 if (affected == 0) throw new SQLException("Insert booking failed");
 
@@ -297,9 +562,15 @@ public class BookingDAO {
                                 addonName = addonNames.get(ad.getCategoryId());
                             } else {
                                 // Fallback to default name
-                                addonName = ad.getCategoryName().equals("MEAL") ? 
-                                    "Meal Service #" + ad.getCategoryId() : 
-                                    "Wellness Service #" + ad.getCategoryId();
+                                if (ad.getCategoryName().equals("MEAL")) {
+                                    addonName = "Meal Service #" + ad.getCategoryId();
+                                } else if (ad.getCategoryName().equals("WELLNESS")) {
+                                    addonName = "Wellness Service #" + ad.getCategoryId();
+                                } else if (ad.getCategoryName().equals("TRANSPORT")) {
+                                    addonName = "Transport Service #" + ad.getCategoryId();
+                                } else {
+                                    addonName = "Service #" + ad.getCategoryId();
+                                }
                             }
                             psAddon.setString(4, addonName);
                             psAddon.setDouble(5, ad.getPrice());

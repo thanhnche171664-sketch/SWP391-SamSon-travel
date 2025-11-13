@@ -545,8 +545,38 @@
                     </div>
                 </c:if>
                 
+                <c:if test="${fn:length(chosenTransports) > 0}">
+                    <div class="section-divider"></div>
+                    <h3 style="font-weight: 700; color: #667eea; margin-bottom: 15px;">🚗 Dịch vụ vận chuyển</h3>
+                    <div class="service-list">
+                        <c:forEach var="i" begin="0" end="${fn:length(chosenTransports)-1}" varStatus="st">
+                            <div class="service-item" style="animation-delay: ${st.index * 0.1}s">
+                                <span class="service-name">
+                                    <strong>${chosenTransports[i].vehicleName}</strong><br/>
+                                    <small style="color: #666;">${chosenTransports[i].vehicleType} - ${chosenTransports[i].pickupLocation}</small><br/>
+                                    <small style="color: #666;">
+                                        <fmt:formatDate value="${chosenTransports[i].departureTime}" pattern="dd/MM/yyyy HH:mm" /> - 
+                                        ${chosenTransports[i].capacity} chỗ
+                                    </small>
+                                </span>
+                                <div class="service-details">
+                                    <span class="service-qty">x${chosenTransportQtys[i]}</span>
+                                    <span class="service-price"><fmt:formatNumber value="${chosenTransports[i].price}" pattern="#,###" />₫</span>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </c:if>
+                
                 <div class="total-section">
                     <div class="total-label">Tổng tiền</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">
+                        Phòng: <fmt:formatNumber value="${roomSubtotal}" pattern="#,###" />₫<br/>
+                        Dịch vụ: <fmt:formatNumber value="${addonsTotal}" pattern="#,###" />₫<br/>
+                        <c:if test="${fn:length(chosenTransports) > 0}">
+                            Vận chuyển: <fmt:formatNumber value="${transportFee}" pattern="#,###" />₫<br/>
+                        </c:if>
+                    </div>
                     <div class="total-amount"><fmt:formatNumber value="${total}" pattern="#,###" />₫</div>
                 </div>
                 
@@ -569,6 +599,12 @@
                             <c:forEach var="i" begin="0" end="${fn:length(chosenWellness)-1}">
                                 <input type="hidden" name="wellness_id" value="${chosenWellness[i].wellnessId}" />
                                 <input type="hidden" name="wellness_qty" value="${chosenWellnessQtys[i]}" />
+                            </c:forEach>
+                        </c:if>
+                        <c:if test="${not empty chosenTransports and fn:length(chosenTransports) > 0}">
+                            <c:forEach var="i" begin="0" end="${fn:length(chosenTransports)-1}">
+                                <input type="hidden" name="transport_id" value="${chosenTransports[i].transportId}" />
+                                <input type="hidden" name="transport_qty" value="${chosenTransportQtys[i]}" />
                             </c:forEach>
                         </c:if>
                         <button type="submit" class="back-btn">
@@ -596,6 +632,12 @@
                             <c:forEach var="i" begin="0" end="${fn:length(chosenWellness)-1}">
                                 <input type="hidden" name="wellness_id" value="${chosenWellness[i].wellnessId}" />
                                 <input type="hidden" name="wellness_qty" value="${chosenWellnessQtys[i]}" />
+                            </c:forEach>
+                        </c:if>
+                        <c:if test="${not empty chosenTransports and fn:length(chosenTransports) > 0}">
+                            <c:forEach var="i" begin="0" end="${fn:length(chosenTransports)-1}">
+                                <input type="hidden" name="transport_id" value="${chosenTransports[i].transportId}" />
+                                <input type="hidden" name="transport_qty" value="${chosenTransportQtys[i]}" />
                             </c:forEach>
                         </c:if>
                         <button type="submit" class="submit-btn" id="confirmBtn" onclick="this.classList.add('loading')">

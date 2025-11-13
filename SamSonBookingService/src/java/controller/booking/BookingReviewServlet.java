@@ -4,10 +4,12 @@ import dao.HotelDAO;
 import dao.RoomDAO;
 import dao.MealServiceDAO;
 import dao.WellnessServiceDAO;
+import dao.TransportServiceDAO;
 import entity.Hotel;
 import entity.Room;
 import entity.MealService;
 import entity.WellnessService;
+import entity.TransportService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -31,6 +33,7 @@ public class BookingReviewServlet extends HttpServlet {
     private final RoomDAO roomDAO = new RoomDAO();
     private final MealServiceDAO mealServiceDAO = new MealServiceDAO();
     private final WellnessServiceDAO wellnessServiceDAO = new WellnessServiceDAO();
+    private final TransportServiceDAO transportServiceDAO = new TransportServiceDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -50,6 +53,7 @@ public class BookingReviewServlet extends HttpServlet {
             session.removeAttribute("booking_meal_qtys");
             session.removeAttribute("booking_wellness_ids");
             session.removeAttribute("booking_wellness_qtys");
+            session.removeAttribute("booking_transport_id");
         }
 
         String hotelParam = request.getParameter("hotel");
@@ -177,11 +181,48 @@ public class BookingReviewServlet extends HttpServlet {
                 }
             }
 
-            double total = roomSubtotal + addonsTotal;
+            // Parse transport selection (multiple transports can be selected)
+            List<TransportService> chosenTransports = new ArrayList<>();
+            List<Integer> chosenTransportQtys = new ArrayList<>();
+            double transportFee = 0.0;
+            String[] transportIds = request.getParameterValues("transport_id");
+            String[] transportQtys = request.getParameterValues("transport_qty");
+            if (transportIds != null && transportQtys != null) {
+                // Match transport IDs with quantities by index
+                List<TransportService> allTransports = transportServiceDAO.getTransportServicesByHotelId(hotelId);
+                for (String transportIdStr : transportIds) {
+                    try {
+                        int transportId = Integer.parseInt(transportIdStr);
+                        // Find the transport in the list to get its index
+                        int transportIndex = -1;
+                        for (int j = 0; j < allTransports.size(); j++) {
+                            if (allTransports.get(j).getTransportId() == transportId) {
+                                transportIndex = j;
+                                break;
+                            }
+                        }
+                        if (transportIndex >= 0 && transportIndex < transportQtys.length) {
+                            int qty = Integer.parseInt(transportQtys[transportIndex]);
+                            if (qty > 0) {
+                                TransportService ts = transportServiceDAO.getById(transportId);
+                                if (ts != null) {
+                                    chosenTransports.add(ts);
+                                    chosenTransportQtys.add(qty);
+                                    transportFee += ts.getPrice() * qty;
+                                }
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        // Skip invalid transport ID
+                    }
+                }
+            }
+
+            double total = roomSubtotal + addonsTotal + transportFee;
 
             String bookingCode = ("B" + System.currentTimeMillis()).toUpperCase();
             String description = "BOOK-" + bookingCode;
-            String qrUrl = "https://img.vietqr.io/image/970422-529042003-compact2.png?amount="
+            String qrUrl = "https://img.vietqr.io/image/MB-0972391380-compact.png"
                     + (long) Math.ceil(total)
                     + "&addInfo=" + URLEncoder.encode(description, StandardCharsets.UTF_8)
                     + "&accountName=DO%20DANG%20LONG";
@@ -207,6 +248,9 @@ public class BookingReviewServlet extends HttpServlet {
             request.setAttribute("chosenMealQtys", chosenMealQtys);
             request.setAttribute("chosenWellness", chosenWellness);
             request.setAttribute("chosenWellnessQtys", chosenWellnessQtys);
+            request.setAttribute("chosenTransports", chosenTransports);
+            request.setAttribute("chosenTransportQtys", chosenTransportQtys);
+            request.setAttribute("transportFee", transportFee);
 
             request.getRequestDispatcher("/bookings/booking_review.jsp").forward(request, response);
 

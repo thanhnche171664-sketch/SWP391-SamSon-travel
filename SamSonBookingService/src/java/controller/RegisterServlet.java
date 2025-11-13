@@ -58,7 +58,7 @@ public class RegisterServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
             LOGGER.info("User already logged in, redirecting to dashboard");
-            response.sendRedirect(request.getContextPath() + "/customer/dashboard.jsp");
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
         
