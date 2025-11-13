@@ -8,6 +8,7 @@ import java.util.Date;
 
 public class TransportService {
     private int transportId;
+     private int hotelId;
     private int categoryId;
     private String vehicleType;
     private String vehicleName;
@@ -17,13 +18,16 @@ public class TransportService {
     private double price;
     private int capacity;
     private int currentPassengers;
+    private String image;
     private Date createdAt;
     private Date updatedAt;
 
-    public TransportService() {}
+    public TransportService() {
+    }
 
-    public TransportService(int transportId, int categoryId, String vehicleType, String vehicleName, String description, String pickupLocation, Date departureTime, double price, int capacity, int currentPassengers, Date createdAt, Date updatedAt) {
+    public TransportService(int transportId, int hotelId, int categoryId, String vehicleType, String vehicleName, String description, String pickupLocation, Date departureTime, double price, int capacity, int currentPassengers, String image, Date createdAt, Date updatedAt) {
         this.transportId = transportId;
+        this.hotelId = hotelId;
         this.categoryId = categoryId;
         this.vehicleType = vehicleType;
         this.vehicleName = vehicleName;
@@ -33,6 +37,7 @@ public class TransportService {
         this.price = price;
         this.capacity = capacity;
         this.currentPassengers = currentPassengers;
+        this.image = image;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -43,6 +48,14 @@ public class TransportService {
 
     public void setTransportId(int transportId) {
         this.transportId = transportId;
+    }
+
+    public int getHotelId() {
+        return hotelId;
+    }
+
+    public void setHotelId(int hotelId) {
+        this.hotelId = hotelId;
     }
 
     public int getCategoryId() {
@@ -117,6 +130,14 @@ public class TransportService {
         this.currentPassengers = currentPassengers;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -133,5 +154,6 @@ public class TransportService {
         this.updatedAt = updatedAt;
     }
 
+    
     
 }

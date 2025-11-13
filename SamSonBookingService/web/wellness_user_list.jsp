@@ -58,7 +58,6 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4 text-success">🌿 Dịch vụ Wellness đang hoạt động</h2>
 
-    <!-- 🔍 Thanh tìm kiếm -->
     <form method="get" action="user-wellness" class="row g-3 align-items-end mb-4 search-box">
         <div class="col-md-4">
             <label class="form-label fw-bold">Tìm theo tên dịch vụ</label>
@@ -77,13 +76,11 @@
         </div>
     </form>
 
-    <!-- 🧾 Danh sách dịch vụ -->
     <div class="row g-4">
         <c:forEach var="ws" items="${services}">
             <div class="col-md-4 col-sm-6">
                 <div class="card h-100">
 
-                    <!-- Ảnh dịch vụ -->
                     <c:choose>
                         <c:when test="${not empty ws.imageUrl}">
                             <img src="${pageContext.request.contextPath}/${ws.imageUrl}"
@@ -102,7 +99,6 @@
                         <p class="card-text text-muted">${ws.description}</p>
                         <p class="price">${ws.basePrice} đ</p>
 
-                        <!-- Nút thao tác -->
                         <div class="d-flex justify-content-between mt-3 gap-2">
                             <a href="${pageContext.request.contextPath}/wellness-detail?id=${ws.wellnessId}"
                                class="btn btn-view btn-sm w-50 text-center">
