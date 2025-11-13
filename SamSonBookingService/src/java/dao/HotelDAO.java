@@ -410,6 +410,12 @@ public class HotelDAO {
         }
         
         try {
+            hotel.setImageUrl(resultSet.getString("image_url"));
+        } catch (SQLException e) {
+            // Field may not exist in some queries
+        }
+        
+        try {
             hotel.setCheckInTime(resultSet.getTime("check_in_time"));
         } catch (SQLException e) {
             // Field may not exist in some queries

@@ -110,6 +110,12 @@ public class HomeServlet extends HttpServlet {
             if (hotels == null || hotels.isEmpty()) {
                 hotels = createSampleHotels();
             }
+            
+            // Debug: Log hotel image URLs
+            for (Hotel hotel : hotels) {
+                LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + ", ImageUrl: " + hotel.getImageUrl());
+            }
+            
             data.setFeaturedHotels(hotels);
             
             // Fetch hero section images
@@ -160,6 +166,7 @@ public class HomeServlet extends HttpServlet {
         hotel1.setAddress("Sầm Sơn, Thanh Hóa");
         hotel1.setRating(4.8);
         hotel1.setAmenities("WiFi,Pool,Restaurant,Spa");
+        hotel1.setImageUrl("uploads/hotel_image/hotel_1.jpg");
         hotels.add(hotel1);
         
         Hotel hotel2 = new Hotel();
@@ -168,6 +175,7 @@ public class HomeServlet extends HttpServlet {
         hotel2.setAddress("Sầm Sơn, Thanh Hóa");
         hotel2.setRating(4.5);
         hotel2.setAmenities("WiFi,Pool,Restaurant");
+        hotel2.setImageUrl("uploads/hotel_image/hotel_2.jpg");
         hotels.add(hotel2);
         
         return hotels;

@@ -443,51 +443,17 @@
             <div class="hotel-detail-gallery">
                 <div class="hotel-detail-primary-image">
                     <c:choose>
-                        <c:when test="${not empty primaryImage}">
-                            <c:choose>
-                                <c:when test="${fn:startsWith(primaryImage.imageUrl, 'http://') || fn:startsWith(primaryImage.imageUrl, 'https://')}">
-                                    <img data-image-url="${primaryImage.imageUrl}" 
-                                         src="" 
-                                         alt="${hotel.name}" 
-                                         class="external-hotel-image"
-                                         onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg';"
-                                         loading="eager">
-                                </c:when>
-                                <c:otherwise>
-                                    <img src="${pageContext.request.contextPath}/${primaryImage.imageUrl}" 
-                                         alt="${hotel.name}"
-                                         onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg';"
-                                         loading="eager">
-                                </c:otherwise>
-                            </c:choose>
+                        <c:when test="${not empty hotel.imageUrl}">
+                            <img src="${pageContext.request.contextPath}/${hotel.imageUrl}" 
+                                 alt="${hotel.name}"
+                                 onerror="console.error('Failed to load image: ${hotel.imageUrl}'); this.src='${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg';">
                         </c:when>
                         <c:otherwise>
-                            <img src="${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg" 
-                                 alt="${hotel.name}">
+                            <img src="${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg" 
+                                 alt="${hotel.name}"
+                                 onerror="this.style.display='none';">
                         </c:otherwise>
                     </c:choose>
-                </div>
-                <div class="hotel-detail-secondary-images">
-                    <c:forEach var="image" items="${hotelImages}" begin="1" end="4" varStatus="status">
-                        <div class="hotel-detail-secondary-image">
-                            <c:choose>
-                                <c:when test="${fn:startsWith(image.imageUrl, 'http://') || fn:startsWith(image.imageUrl, 'https://')}">
-                                    <img data-image-url="${image.imageUrl}" 
-                                         src="" 
-                                         alt="${hotel.name} - Image ${status.index + 1}" 
-                                         class="external-hotel-image"
-                                         onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg';"
-                                         loading="lazy">
-                                </c:when>
-                                <c:otherwise>
-                                    <img src="${pageContext.request.contextPath}/${image.imageUrl}" 
-                                         alt="${hotel.name} - Image ${status.index + 1}"
-                                         onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg';"
-                                         loading="lazy">
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </c:forEach>
                 </div>
             </div>
 
