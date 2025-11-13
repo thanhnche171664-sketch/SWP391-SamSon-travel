@@ -15,6 +15,49 @@ import java.util.List;
  */
 public class RoomDAO {
     
+    // Lấy tất cả phòng từ tất cả khách sạn
+    public List<Room> getAllRooms() {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT * FROM Rooms ORDER BY hotel_id, room_type";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            System.out.println("RoomDAO: Đang thực thi query: " + sql);
+            ResultSet rs = ps.executeQuery();
+            
+            int count = 0;
+            while (rs.next()) {
+                try {
+                    Room room = mapResultSetToRoom(rs);
+                    rooms.add(room);
+                    count++;
+                    System.out.println("RoomDAO: Đã load phòng ID: " + room.getId() + ", Loại: " + room.getRoomType());
+                } catch (SQLException e) {
+                    System.err.println("RoomDAO: Lỗi khi map ResultSet sang Room object: " + e.getMessage());
+                    e.printStackTrace();
+                    // Tiếp tục với record tiếp theo
+                }
+            }
+            
+            System.out.println("RoomDAO: Tổng số phòng lấy được: " + count);
+            
+        } catch (SQLException e) {
+            System.err.println("RoomDAO: Lỗi SQL khi lấy danh sách phòng: " + e.getMessage());
+            System.err.println("RoomDAO: SQL State: " + e.getSQLState());
+            System.err.println("RoomDAO: Error Code: " + e.getErrorCode());
+            e.printStackTrace();
+            // Trả về empty list thay vì throw exception
+            return new ArrayList<>();
+        } catch (Exception e) {
+            System.err.println("RoomDAO: Lỗi không xác định khi lấy danh sách phòng: " + e.getMessage());
+            e.printStackTrace();
+            // Trả về empty list thay vì throw exception
+            return new ArrayList<>();
+        }
+        return rooms;
+    }
+    
     // Lấy tất cả phòng của một khách sạn
     public List<Room> getRoomsByHotelId(int hotelId) {
         List<Room> rooms = new ArrayList<>();
