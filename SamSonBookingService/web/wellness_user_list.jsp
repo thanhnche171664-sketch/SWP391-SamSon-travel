@@ -56,6 +56,15 @@
 <body>
 
 <div class="container mt-5">
+
+    <!-- Nút quay lại trang Home -->
+    <div class="mb-3">
+        <a href="${pageContext.request.contextPath}/home"
+           class="btn btn-outline-primary">
+            ⬅ Quay lại trang Home
+        </a>
+    </div>
+
     <h2 class="text-center mb-4 text-success">🌿 Dịch vụ Wellness đang hoạt động</h2>
 
     <form method="get" action="user-wellness" class="row g-3 align-items-end mb-4 search-box">
