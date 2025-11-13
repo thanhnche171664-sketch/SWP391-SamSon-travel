@@ -164,7 +164,7 @@ public class BookingReviewServlet extends HttpServlet {
 
             String bookingCode = ("B" + System.currentTimeMillis()).toUpperCase();
             String description = "BOOK-" + bookingCode;
-            String qrUrl = "https://img.vietqr.io/image/970422-529042003-compact2.png?amount="
+            String qrUrl = "https://img.vietqr.io/image/MB-0972391380-compact.png"
                     + (long) Math.ceil(total)
                     + "&addInfo=" + URLEncoder.encode(description, StandardCharsets.UTF_8)
                     + "&accountName=DO%20DANG%20LONG";

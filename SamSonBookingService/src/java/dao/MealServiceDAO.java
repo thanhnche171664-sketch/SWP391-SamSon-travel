@@ -7,11 +7,29 @@ import java.util.List;
 
 public class MealServiceDAO extends DBContext {
     
+    // Lấy tất cả meal services đang active
+    public List<MealService> getAllActiveMealServices() {
+        List<MealService> services = new ArrayList<>();
+        String sql = "SELECT * FROM Meal_Services WHERE status = 'ACTIVE' ORDER BY meal_date DESC, meal_type";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                services.add(mapResultSetToMealService(rs));
+            }
+        } catch (Exception e) {
+            System.err.println("MealServiceDAO: Lỗi khi lấy danh sách meal services: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return services;
+    }
+    
     public List<MealService> getMealServicesByHotelId(int hotelId) {
         List<MealService> services = new ArrayList<>();
         String sql = "SELECT * FROM Meal_Services WHERE hotel_id = ? ORDER BY meal_date DESC, meal_type";
         
-        try (Connection conn = getConnection();
+        try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, hotelId);
             ResultSet rs = ps.executeQuery();
@@ -26,7 +44,7 @@ public class MealServiceDAO extends DBContext {
     
     public MealService getMealServiceById(int mealId) {
         String sql = "SELECT * FROM Meal_Services WHERE meal_id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, mealId);
             ResultSet rs = ps.executeQuery();
@@ -42,7 +60,7 @@ public class MealServiceDAO extends DBContext {
     public int insertMealServiceAndReturnId(MealService service) {
         String sql = "INSERT INTO Meal_Services (hotel_id, category_id, meal_type, meal_date, description, price, status) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = getConnection();
+        try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, service.getHotelId());
             ps.setInt(2, service.getCategoryId());
@@ -68,7 +86,7 @@ public class MealServiceDAO extends DBContext {
     public boolean updateMealService(MealService service) {
         String sql = "UPDATE Meal_Services SET category_id = ?, meal_type = ?, meal_date = ?, " +
                     "description = ?, price = ?, status = ?, updated_at = GETDATE() WHERE meal_id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, service.getCategoryId());
             ps.setString(2, service.getMealType());
@@ -86,7 +104,7 @@ public class MealServiceDAO extends DBContext {
     
     public boolean deleteMealService(int mealId) {
         String sql = "DELETE FROM Meal_Services WHERE meal_id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, mealId);
             return ps.executeUpdate() > 0;
