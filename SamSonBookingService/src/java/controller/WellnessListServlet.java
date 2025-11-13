@@ -21,7 +21,8 @@ public class WellnessListServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         int page = 1;
-        int pageSize = 5; 
+        int pageSize = 5;
+
         String pageParam = request.getParameter("page");
         String status = request.getParameter("status");
 
@@ -33,7 +34,7 @@ public class WellnessListServlet extends HttpServlet {
             }
         }
 
-        if (status == null || status.isEmpty()) {
+        if (status == null || status.isBlank()) {
             status = "all";
         }
 
@@ -46,12 +47,12 @@ public class WellnessListServlet extends HttpServlet {
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("statusFilter", status);
 
-        request.getRequestDispatcher("wellness_list.jsp").forward(request, response);
+        request.getRequestDispatcher("/wellness_list.jsp").forward(request, response);
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        doGet(request, response);
     }
-
 }

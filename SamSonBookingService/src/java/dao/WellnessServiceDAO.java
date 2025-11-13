@@ -1,8 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dao;
+
 import entity.WellnessService;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,16 +8,11 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author gamel
- */
 public class WellnessServiceDAO {
-private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.getName());
 
     public List<WellnessService> getAll(int page, int pageSize, String statusFilter) {
         List<WellnessService> list = new ArrayList<>();
@@ -39,6 +31,7 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             if (statusFilter != null && !statusFilter.equalsIgnoreCase("all")) {
                 ps.setString(index++, statusFilter.toUpperCase());
             }
+
             ps.setInt(index++, (page - 1) * pageSize);
             ps.setInt(index, pageSize);
 
@@ -49,7 +42,7 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[getAll] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[getAll] SQL Error", e);
         }
 
         return list;
@@ -76,7 +69,7 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[countAll] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[countAll] SQL Error", e);
         }
         return 0;
     }
@@ -94,9 +87,27 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[getById] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[getById] SQL Error", e);
         }
         return null;
+    }
+
+    public boolean existsByHotelAndName(int hotelId, String serviceName) {
+        String sql = "SELECT 1 FROM Wellness_Services WHERE hotel_id = ? AND service_name = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, hotelId);
+            ps.setString(2, serviceName.trim());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); 
+            }
+
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[existsByHotelAndName] SQL Error", e);
+        }
+        return false;
     }
 
     public boolean addWellnessService(WellnessService ws) {
@@ -133,7 +144,7 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
                 ps.setNull(8, Types.INTEGER);
             }
 
-            ps.setString(9, ws.getImageUrl());
+            ps.setString(9, ws.getImageUrl()); // có thể null
 
             String status = (ws.getStatus() != null) ? ws.getStatus().toUpperCase() : "ACTIVE";
             ps.setString(10, status);
@@ -141,7 +152,8 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[addWellnessService] SQL Error: {0}", e.getMessage());
+            e.printStackTrace(); 
+            LOGGER.log(Level.SEVERE, "[addWellnessService] SQL Error", e);
             return false;
         }
     }
@@ -199,11 +211,12 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[updateWellnessService] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[updateWellnessService] SQL Error", e);
             return false;
         }
     }
 
+    // Xóa dịch vụ
     public boolean deleteWellnessService(int id) {
         String sql = "DELETE FROM Wellness_Services WHERE wellness_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -213,11 +226,12 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[deleteWellnessService] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[deleteWellnessService] SQL Error", e);
             return false;
         }
     }
 
+    // Search theo tên + phân trang + filter status
     public List<WellnessService> searchByName(String keyword, int page, int pageSize, String statusFilter) {
         List<WellnessService> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM Wellness_Services WHERE service_name LIKE ?");
@@ -248,7 +262,7 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[searchByName] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[searchByName] SQL Error", e);
         }
 
         return list;
@@ -274,12 +288,13 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[countSearch] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[countSearch] SQL Error", e);
         }
 
         return 0;
     }
 
+    // Một vài hàm filter khác nếu cần
     public List<WellnessService> getWellnessServicesByHotelId(int hotelId) {
         return getFilteredList("SELECT * FROM Wellness_Services WHERE hotel_id = ?", hotelId);
     }
@@ -301,7 +316,7 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[getFilteredList] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[getFilteredList] SQL Error", e);
         }
         return list;
     }
@@ -323,12 +338,13 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
             }
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[getWellnessServicesByPriceRange] SQL Error: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "[getWellnessServicesByPriceRange] SQL Error", e);
         }
 
         return list;
     }
 
+    // Map resultset → entity
     private WellnessService mapResultSet(ResultSet rs) throws SQLException {
         int duration = rs.getInt("duration_minutes");
         if (rs.wasNull()) {
@@ -350,7 +366,7 @@ private static final Logger LOGGER = Logger.getLogger(WellnessServiceDAO.class.g
                 duration,
                 rs.getString("operating_hours"),
                 capacity,
-                rs.getString("image_url"),          
+                rs.getString("image_url"),
                 rs.getString("status"),
                 rs.getTimestamp("created_at"),
                 rs.getTimestamp("updated_at")
