@@ -379,33 +379,18 @@
                     <c:when test="${not empty hotels}">
                         <div class="hotels-grid">
                             <c:forEach var="hotel" items="${hotels}" varStatus="status">
-                                <c:set var="hotelImageUrl" value="${hotelImages[hotel.id]}" />
                                 <div class="hotel-card animate-slide-up" style="animation-delay: ${status.index * 0.1}s">
                                     <div class="hotel-card-image">
                                         <c:choose>
-                                            <c:when test="${not empty hotelImageUrl}">
-                                                <c:choose>
-                                                    <c:when test="${fn:startsWith(hotelImageUrl, 'http://') || fn:startsWith(hotelImageUrl, 'https://')}">
-                                                        <img data-image-url="${hotelImageUrl}" 
-                                                             src="" 
-                                                             alt="${hotel.name}" 
-                                                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg';"
-                                                             loading="lazy"
-                                                             class="external-hotel-image">
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <img src="${pageContext.request.contextPath}/${hotelImageUrl}" 
-                                                             alt="${hotel.name}" 
-                                                             onerror="console.error('Failed to load local image:', '${hotelImageUrl}'); this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg';"
-                                                             onload="console.log('Local image loaded:', '${hotelImageUrl}');"
-                                                             loading="lazy">
-                                                    </c:otherwise>
-                                                </c:choose>
+                                            <c:when test="${not empty hotel.imageUrl}">
+                                                <img src="${pageContext.request.contextPath}/${hotel.imageUrl}" 
+                                                     alt="${hotel.name}" 
+                                                     onerror="console.error('Failed to load image: ${hotel.imageUrl}'); this.src='${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg';">
                                             </c:when>
                                             <c:otherwise>
-                                                <img src="${pageContext.request.contextPath}/assets/images/hotels/default-hotel.jpg" 
-                                                     alt="${hotel.name}"
-                                                     loading="lazy">
+                                                <img src="${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg" 
+                                                     alt="${hotel.name}" 
+                                                     onerror="this.style.display='none';">
                                             </c:otherwise>
                                         </c:choose>
                                         <c:if test="${hotel.featured}">

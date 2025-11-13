@@ -32,6 +32,54 @@ public class PaymentDAO {
     private static final String UPDATE_BOOKING_STATUS = 
         "UPDATE Bookings SET status = ?, updated_at = GETDATE() WHERE id = ?";
     
+    // SQL query để lưu payment
+    private static final String INSERT_PAYMENT =
+        "INSERT INTO Payments (booking_id, transaction_id, currency, payment_method, payment_date, amount, status, description) " +
+        "VALUES (?, ?, ?, ?, GETDATE(), ?, ?, ?)";
+    
+    /**
+     * Lưu payment vào database
+     * 
+     * @param payment Đối tượng Payment cần lưu
+     * @return ID của payment vừa được tạo, -1 nếu lỗi
+     */
+    public int savePayment(Payment payment) {
+        if (payment == null) {
+            LOGGER.warning("Cannot save null payment");
+            return -1;
+        }
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(INSERT_PAYMENT, Statement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setInt(1, payment.getBookingId());
+            ps.setString(2, payment.getTransactionId());
+            ps.setString(3, payment.getCurrency() != null ? payment.getCurrency() : "VND");
+            ps.setString(4, payment.getPaymentMethod());
+            ps.setDouble(5, payment.getAmount());
+            ps.setString(6, payment.getStatus());
+            ps.setString(7, "OFFLINE-BOOKING-" + payment.getBookingId());
+            
+            int affectedRows = ps.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int paymentId = generatedKeys.getInt(1);
+                        LOGGER.info("Saved payment with ID: " + paymentId);
+                        return paymentId;
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error saving payment", e);
+            System.err.println("Lỗi lưu payment: " + e.getMessage());
+        }
+        
+        return -1;
+    }
+    
     public Payment getPaymentByBookingId(int bookingId) {
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(GET_PAYMENT_BY_BOOKING_ID)) {
