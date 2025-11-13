@@ -57,7 +57,7 @@ public class BookingDAO {
 
     private static final String INSERT_BOOKING =
         "INSERT INTO Bookings (user_id, hotel_id, room_type, number_of_rooms, transport_id, transport_fee, total_price, booking_date, booking_source, created_by, status, check_in_date, check_out_date, num_adults, num_children, booking_code, created_at, updated_at) " +
-        "VALUES (?, ?, ?, ?, NULL, 0, ?, GETDATE(), 'ONLINE', ?, 'pending', ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), 'ONLINE', ?, 'pending', ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
 
     private static final String INSERT_ADDON =
         "INSERT INTO Booking_Addons (booking_id, addon_type, reference_id, name, unit_price, quantity) VALUES (?,?,?,?,?,?)";
@@ -531,13 +531,15 @@ public class BookingDAO {
                 ps.setObject(2, booking.getHotelId());
                 ps.setString(3, booking.getRoomType());
                 ps.setInt(4, booking.getNumberOfRooms());
-                ps.setDouble(5, booking.getTotalPrice());
-                ps.setObject(6, booking.getCreatedBy());
-                ps.setDate(7, java.sql.Date.valueOf(checkIn));
-                ps.setDate(8, java.sql.Date.valueOf(checkOut));
-                ps.setInt(9, numAdults);
-                ps.setInt(10, numChildren);
-                ps.setString(11, bookingCode);
+                ps.setObject(5, booking.getTransportId());
+                ps.setDouble(6, booking.getTransportFee());
+                ps.setDouble(7, booking.getTotalPrice());
+                ps.setObject(8, booking.getCreatedBy());
+                ps.setDate(9, java.sql.Date.valueOf(checkIn));
+                ps.setDate(10, java.sql.Date.valueOf(checkOut));
+                ps.setInt(11, numAdults);
+                ps.setInt(12, numChildren);
+                ps.setString(13, bookingCode);
                 int affected = ps.executeUpdate();
                 if (affected == 0) throw new SQLException("Insert booking failed");
 
@@ -560,9 +562,15 @@ public class BookingDAO {
                                 addonName = addonNames.get(ad.getCategoryId());
                             } else {
                                 // Fallback to default name
-                                addonName = ad.getCategoryName().equals("MEAL") ? 
-                                    "Meal Service #" + ad.getCategoryId() : 
-                                    "Wellness Service #" + ad.getCategoryId();
+                                if (ad.getCategoryName().equals("MEAL")) {
+                                    addonName = "Meal Service #" + ad.getCategoryId();
+                                } else if (ad.getCategoryName().equals("WELLNESS")) {
+                                    addonName = "Wellness Service #" + ad.getCategoryId();
+                                } else if (ad.getCategoryName().equals("TRANSPORT")) {
+                                    addonName = "Transport Service #" + ad.getCategoryId();
+                                } else {
+                                    addonName = "Service #" + ad.getCategoryId();
+                                }
                             }
                             psAddon.setString(4, addonName);
                             psAddon.setDouble(5, ad.getPrice());
