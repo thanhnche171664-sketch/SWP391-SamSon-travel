@@ -61,16 +61,28 @@
 <body>
 
 <div class="container mt-5">
+
+    <!-- Nút quay lại trang Home -->
+    <div class="mb-3">
+        <a href="${pageContext.request.contextPath}/home"
+           class="btn btn-outline-primary">
+            ⬅ Quay lại trang Home
+        </a>
+    </div>
+
     <h2 class="text-center mb-4 text-primary">🚐 Dịch vụ vận chuyển</h2>
 
-    <form method="get" action="${pageContext.request.contextPath}/user-transport" class="row g-3 align-items-end mb-4 search-box">
+    <form method="get" action="${pageContext.request.contextPath}/user-transport"
+          class="row g-3 align-items-end mb-4 search-box">
         <div class="col-md-5">
             <label class="form-label fw-bold">Tìm theo tên xe</label>
-            <input type="text" name="search" value="${param.search}" class="form-control" placeholder="Ví dụ: Limousine, Mazda, Innova...">
+            <input type="text" name="search" value="${param.search}" class="form-control"
+                   placeholder="Ví dụ: Limousine, Mazda, Innova...">
         </div>
         <div class="col-md-3">
             <label class="form-label fw-bold">Điểm đón</label>
-            <input type="text" name="pickup" value="${param.pickup}" class="form-control" placeholder="Hà Nội - Sầm Sơn">
+            <input type="text" name="pickup" value="${param.pickup}" class="form-control"
+                   placeholder="Hà Nội - Sầm Sơn">
         </div>
         <div class="col-md-2">
             <button type="submit" class="btn btn-primary w-100">Lọc</button>
@@ -90,7 +102,8 @@
                                 <img src="${pageContext.request.contextPath}/${t.image}" alt="${t.vehicleName}">
                             </c:when>
                             <c:otherwise>
-                                <img src="${pageContext.request.contextPath}/Imagetransport/default_transport.jpg" alt="No image">
+                                <img src="${pageContext.request.contextPath}/Imagetransport/default_transport.jpg"
+                                     alt="No image">
                             </c:otherwise>
                         </c:choose>
 
@@ -101,7 +114,8 @@
                                 Điểm đón: ${t.pickupLocation}
                             </p>
                             <p class="mb-1" style="font-size: .8rem;">
-                                Khởi hành: <fmt:formatDate value="${t.departureTime}" pattern="dd/MM/yyyy HH:mm" />
+                                Khởi hành:
+                                <fmt:formatDate value="${t.departureTime}" pattern="dd/MM/yyyy HH:mm" />
                             </p>
                             <p class="price mb-2">${t.price} đ</p>
                             <p class="mb-2" style="font-size: .8rem;">Sức chứa: ${t.capacity}</p>
@@ -110,7 +124,9 @@
                                 <input type="hidden" name="serviceType" value="TRANSPORT">
                                 <input type="hidden" name="serviceId" value="${t.transportId}">
                                 <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="btn btn-cart btn-sm w-100">🛒 Thêm giỏ hàng</button>
+                                <button type="submit" class="btn btn-cart btn-sm w-100">
+                                    🛒 Thêm giỏ hàng
+                                </button>
                             </form>
                         </div>
                     </div>

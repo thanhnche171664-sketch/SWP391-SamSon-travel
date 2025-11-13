@@ -8,7 +8,6 @@
     <meta charset="UTF-8">
     <title>Danh sách dịch vụ vận chuyển</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
@@ -29,14 +28,13 @@
             padding: 24px 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
 
         .sidebar-header {
             display: flex;
             flex-direction: column;
             gap: 4px;
-            margin-bottom: 28px;
+            margin-bottom: 20px;
         }
 
         .sidebar-header-title {
@@ -49,11 +47,6 @@
 
         .sidebar-header-title i {
             font-size: 1.5rem;
-        }
-
-        .sidebar-header-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
         }
 
         .sidebar-menu-title {
@@ -100,7 +93,7 @@
         }
 
         .sidebar-bottom {
-            margin-top: 32px;
+            margin-top: auto;
         }
 
         .sidebar-user-box {
@@ -171,6 +164,19 @@
         .btn {
             border-radius: 6px;
         }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+
+        .action-buttons .btn {
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -184,9 +190,6 @@
                 <div class="sidebar-header-title">
                     <i class="bi bi-building-fill"></i>
                     <span>Service Manager</span>
-                </div>
-                <div class="sidebar-header-subtitle">
-                    <i class="bi bi-bus-front-fill" style="font-size: 1.2rem; opacity: 0.9;"></i>
                 </div>
             </div>
 
@@ -206,14 +209,12 @@
                         <span>Thêm dịch vụ</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="${pageContext.request.contextPath}/transport-list" class="sidebar-link active">
                         <i class="bi bi-bus-front-fill"></i>
                         <span>Phương tiện</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="${pageContext.request.contextPath}/profile" class="sidebar-link">
                         <i class="bi bi-person-circle"></i>
@@ -319,19 +320,21 @@
                             </td>
                             <td>${t.capacity}</td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/transport-detail?id=${t.transportId}"
-                                   class="btn btn-sm btn-outline-info me-1">
-                                    Chi tiết
-                                </a>
-                                <a href="${pageContext.request.contextPath}/transport-edit?id=${t.transportId}"
-                                   class="btn btn-sm btn-outline-primary me-1">
-                                    Sửa
-                                </a>
-                                <a href="${pageContext.request.contextPath}/transport-delete?id=${t.transportId}"
-                                   class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('Bạn có chắc muốn xóa dịch vụ này?');">
-                                    Xóa
-                                </a>
+                                <div class="action-buttons">
+                                    <a href="${pageContext.request.contextPath}/transport-detail?id=${t.transportId}"
+                                       class="btn btn-sm btn-outline-info">
+                                        Chi tiết
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/transport-edit?id=${t.transportId}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Sửa
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/transport-delete?id=${t.transportId}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Bạn có chắc muốn xóa dịch vụ này?');">
+                                        Xóa
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>
