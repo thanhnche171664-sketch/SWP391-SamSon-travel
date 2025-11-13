@@ -1,7 +1,9 @@
 package controller;
 
 import dao.TransportServiceDAO;
+import dao.HotelDAO;
 import entity.TransportService;
+import entity.Hotel;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -10,16 +12,24 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @WebServlet(name = "TransportAddServlet", urlPatterns = {"/transport-add"})
 public class TransportAddServlet extends HttpServlet {
 
     private final TransportServiceDAO dao = new TransportServiceDAO();
+    private final HotelDAO hotelDAO = new HotelDAO();   // 🔹 thêm DAO hotel
     private static final String DATE_FMT = "yyyy-MM-dd HH:mm:ss";
+
+    private void loadHotels(HttpServletRequest request) {
+        List<Hotel> hotels = hotelDAO.getAllHotels(); // đặt tên hàm theo DAO của bạn
+        request.setAttribute("hotels", hotels);
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        loadHotels(request); // 🔹 load danh sách hotel cho dropdown
         request.getRequestDispatcher("transport_add.jsp").forward(request, response);
     }
 
@@ -28,15 +38,15 @@ public class TransportAddServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        String hotelIdStr      = request.getParameter("hotelId");
-        String vehicleType     = request.getParameter("vehicleType");
-        String vehicleName     = request.getParameter("vehicleName");
-        String description     = request.getParameter("description");
-        String pickupLocation  = request.getParameter("pickupLocation");
-        String departureTimeStr= request.getParameter("departureTime");
-        String priceStr        = request.getParameter("price");
-        String capacityStr     = request.getParameter("capacity");
-        String image           = request.getParameter("image");
+        String hotelIdStr       = request.getParameter("hotelId");
+        String vehicleType      = request.getParameter("vehicleType");
+        String vehicleName      = request.getParameter("vehicleName");
+        String description      = request.getParameter("description");
+        String pickupLocation   = request.getParameter("pickupLocation");
+        String departureTimeStr = request.getParameter("departureTime");
+        String priceStr         = request.getParameter("price");
+        String capacityStr      = request.getParameter("capacity");
+        String image            = request.getParameter("image");
 
         int categoryId = 2;
 
@@ -76,7 +86,7 @@ public class TransportAddServlet extends HttpServlet {
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat(DATE_FMT);
-            sdf.setLenient(false); 
+            sdf.setLenient(false);
             departureTime = sdf.parse(departureTimeStr);
         } catch (ParseException e) {
             hasError = true;
@@ -107,6 +117,8 @@ public class TransportAddServlet extends HttpServlet {
 
         if (hasError) {
             request.setAttribute("error", sbError.toString());
+            // 🔹 cần load lại danh sách hotel để select không bị rỗng
+            loadHotels(request);
             request.getRequestDispatcher("transport_add.jsp").forward(request, response);
             return;
         }
@@ -128,6 +140,7 @@ public class TransportAddServlet extends HttpServlet {
             response.sendRedirect("transport-list?message=add_success");
         } else {
             request.setAttribute("error", "Không thể thêm dịch vụ vận chuyển.");
+            loadHotels(request);
             request.getRequestDispatcher("transport_add.jsp").forward(request, response);
         }
     }
