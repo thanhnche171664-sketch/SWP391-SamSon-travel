@@ -87,22 +87,12 @@
         <!-- Section 1: Hero Section -->
         <section id="home" class="hero-section" aria-label="Hero section">
             <div class="hero-slider" id="heroSlider" role="img" aria-label="Hero images showcasing SamSon Travel destinations">
-                <c:choose>
-                    <c:when test="${homepageData != null && homepageData.heroImages != null && !empty homepageData.heroImages}">
-                        <c:forEach var="heroImage" items="${homepageData.heroImages}" varStatus="status">
-                            <div class="hero-slide ${status.first ? 'active' : ''}" 
-                                 style="background-image: url('${pageContext.request.contextPath}/uploads/${heroImage.fileUrl}')"
-                                 aria-hidden="${status.first ? 'false' : 'true'}">
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="hero-slide active" 
-                             style="background-image: url('${pageContext.request.contextPath}/uploads/heroSection/bai-bien-sam-son-1-1024x682.webp')"
-                             aria-hidden="false">
-                        </div>
-                    </c:otherwise>
-                </c:choose>
+                <c:forEach var="heroImage" items="${homepageData.heroImages}" varStatus="status">
+                    <div class="hero-slide ${status.first ? 'active' : ''}" 
+                         style="background-image: url('${pageContext.request.contextPath}/uploads/${heroImage.fileUrl}')"
+                         aria-hidden="${status.first ? 'false' : 'true'}">
+                    </div>
+                </c:forEach>
             </div>
             
             <div class="hero-overlay"></div>
@@ -184,63 +174,41 @@
                 </div>
                 
                 <div class="hotels-grid">
-                    <c:choose>
-                        <c:when test="${homepageData != null && homepageData.featuredHotels != null && !empty homepageData.featuredHotels}">
-                            <c:forEach var="hotel" items="${homepageData.featuredHotels}" varStatus="status">
-                                <div class="hotel-card animate-slide-up" style="animation-delay: ${status.index * 0.1}s">
-                                    <div class="hotel-card-image">
-                                        <c:choose>
-                                            <c:when test="${not empty hotel.imageUrl}">
-                                                <img src="${pageContext.request.contextPath}/${hotel.imageUrl}" 
-                                                     alt="${hotel.name}" 
-                                                     onerror="console.error('Failed to load image: ${hotel.imageUrl}'); this.src='${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg';">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <img src="${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg" 
-                                                     alt="${hotel.name}" 
-                                                     onerror="this.style.display='none';">
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <div class="hotel-card-rating">
-                                            <i class="fas fa-star"></i>
-                                            <span><fmt:formatNumber value="${hotel.rating}" maxFractionDigits="1"/></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="hotel-card-content">
-                                        <h3 class="hotel-card-title">${hotel.name}</h3>
-                                        <div class="hotel-card-location">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            ${hotel.address}
-                                        </div>
-                                        
-                                        <div class="hotel-card-amenities">
-                                            <c:if test="${hotel.amenities != null && !empty hotel.amenities}">
-                                                <c:forTokens var="amenity" items="${hotel.amenities}" delims=",">
-                                                    <span class="hotel-card-amenity">${amenity}</span>
-                                                </c:forTokens>
-                                            </c:if>
-                                        </div>
-                                        
-                                        <div class="hotel-card-price">
-                                            Từ <fmt:formatNumber value="2000000" type="currency" currencyCode="VND"/>/đêm
-                                        </div>
-                                        
-                                        <button class="btn btn-primary" onclick="viewHotelDetails(${hotel.id})">
-                                            <i class="fas fa-bed"></i>
-                                            Xem chi tiết
-                                        </button>
-                                    </div>
+                    <c:forEach var="hotel" items="${homepageData.featuredHotels}" varStatus="status">
+                        <div class="hotel-card animate-slide-up" style="animation-delay: ${status.index * 0.1}s">
+                            <div class="hotel-card-image">
+                                <img src="${pageContext.request.contextPath}/assets/images/hotels/hotel-${hotel.id}.jpg" 
+                                     alt="${hotel.name}" loading="lazy">
+                                <div class="hotel-card-rating">
+                                    <i class="fas fa-star"></i>
+                                    <span><fmt:formatNumber value="${hotel.rating}" maxFractionDigits="1"/></span>
                                 </div>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="no-data-message">
-                                <i class="fas fa-info-circle"></i>
-                                <p>Hiện tại chưa có khách sạn nào được hiển thị.</p>
                             </div>
-                        </c:otherwise>
-                    </c:choose>
+                            
+                            <div class="hotel-card-content">
+                                <h3 class="hotel-card-title">${hotel.name}</h3>
+                                <div class="hotel-card-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    ${hotel.address}
+                                </div>
+                                
+                                <div class="hotel-card-amenities">
+                                    <c:forTokens var="amenity" items="${hotel.amenities}" delims=",">
+                                        <span class="hotel-card-amenity">${amenity}</span>
+                                    </c:forTokens>
+                                </div>
+                                
+                                <div class="hotel-card-price">
+                                    Từ <fmt:formatNumber value="2000000" type="currency" currencyCode="VND"/>/đêm
+                                </div>
+                                
+                                <button class="btn btn-primary" onclick="viewHotelDetails(${hotel.id})">
+                                    <i class="fas fa-bed"></i>
+                                    Xem chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </c:forEach>
                 </div>
                 
                 <div class="text-center animate-fade-in delay-800">
@@ -264,32 +232,22 @@
                 </div>
                 
                 <div class="destinations-grid">
-                    <c:choose>
-                        <c:when test="${homepageData != null && homepageData.destinationImages != null && !empty homepageData.destinationImages}">
-                            <c:forEach var="destination" items="${homepageData.destinationImages}" varStatus="status">
-                                <div class="destination-card animate-scale-in" style="animation-delay: ${status.index * 0.1}s">
-                                    <div class="destination-image">
-                                        <img src="${pageContext.request.contextPath}/uploads/${destination.fileUrl}" 
-                                             alt="${destination.title != null ? destination.title : 'Điểm đến'}" loading="lazy">
-                                        <div class="destination-overlay">
-                                            <h3 class="destination-title">${destination.title != null ? destination.title : 'Điểm đến'}</h3>
-                                            <p class="destination-description">${destination.description != null ? destination.description : ''}</p>
-                                            <button class="btn btn-white" onclick="viewDestination('${destination.title != null ? destination.title : ''}')">
-                                                <i class="fas fa-eye"></i>
-                                                Khám phá
-                                            </button>
-                                        </div>
-                                    </div>
+                    <c:forEach var="destination" items="${homepageData.destinationImages}" varStatus="status">
+                        <div class="destination-card animate-scale-in" style="animation-delay: ${status.index * 0.1}s">
+                            <div class="destination-image">
+                                <img src="${pageContext.request.contextPath}/uploads/${destination.fileUrl}" 
+                                     alt="${destination.title}" loading="lazy">
+                                <div class="destination-overlay">
+                                    <h3 class="destination-title">${destination.title}</h3>
+                                    <p class="destination-description">${destination.description}</p>
+                                    <button class="btn btn-white" onclick="viewDestination('${destination.title}')">
+                                        <i class="fas fa-eye"></i>
+                                        Khám phá
+                                    </button>
                                 </div>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="no-data-message">
-                                <i class="fas fa-info-circle"></i>
-                                <p>Hiện tại chưa có điểm đến nào được hiển thị.</p>
                             </div>
-                        </c:otherwise>
-                    </c:choose>
+                        </div>
+                    </c:forEach>
                 </div>
             </div>
         </section>
@@ -306,30 +264,20 @@
                 </div>
                 
                 <div class="services-grid">
-                    <c:choose>
-                        <c:when test="${homepageData != null && homepageData.serviceCategories != null && !empty homepageData.serviceCategories}">
-                            <c:forEach var="service" items="${homepageData.serviceCategories}" varStatus="status">
-                                <div class="service-card animate-slide-up" style="animation-delay: ${status.index * 0.1}s">
-                                    <div class="service-icon">
-                                        <i class="${service.iconClass != null ? service.iconClass : 'fas fa-star'}"></i>
-                                    </div>
-                                    <h3 class="service-title">${service.categoryName != null ? service.categoryName : 'Dịch vụ'}</h3>
-                                    <p class="service-description">${service.description != null ? service.description : ''}</p>
-                                    <a href="${pageContext.request.contextPath}/services?category=${service.categoryCode != null ? service.categoryCode : ''}" 
-                                       class="service-link">
-                                        <i class="fas fa-arrow-right"></i>
-                                        Tìm hiểu thêm
-                                    </a>
-                                </div>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="no-data-message">
-                                <i class="fas fa-info-circle"></i>
-                                <p>Hiện tại chưa có dịch vụ nào được hiển thị.</p>
+                    <c:forEach var="service" items="${homepageData.serviceCategories}" varStatus="status">
+                        <div class="service-card animate-slide-up" style="animation-delay: ${status.index * 0.1}s">
+                            <div class="service-icon">
+                                <i class="${service.iconClass}"></i>
                             </div>
-                        </c:otherwise>
-                    </c:choose>
+                            <h3 class="service-title">${service.categoryName}</h3>
+                            <p class="service-description">${service.description}</p>
+                            <a href="${pageContext.request.contextPath}/services?category=${service.categoryCode}" 
+                               class="service-link">
+                                <i class="fas fa-arrow-right"></i>
+                                Tìm hiểu thêm
+                            </a>
+                        </div>
+                    </c:forEach>
                 </div>
             </div>
         </section>
@@ -339,7 +287,7 @@
             <div class="container">
                 <div class="statistics-grid">
                     <div class="statistic-item animate-count-up delay-200">
-                        <div class="statistic-number" data-target="${homepageData != null && homepageData.totalHotels != null ? homepageData.totalHotels : 0}">0</div>
+                        <div class="statistic-number" data-target="${homepageData.totalHotels}">0</div>
                         <div class="statistic-label">Khách sạn</div>
                     </div>
                     <div class="statistic-item animate-count-up delay-600">
