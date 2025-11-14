@@ -493,7 +493,8 @@
                         <select name="room_type" id="roomType" required onchange="calculatePrice()">
                             <c:forEach var="r" items="${rooms}">
                                 <option value="${r.roomType}" data-price="${r.price}" 
-                                        ${sessionScope.booking_room_type == r.roomType ? 'selected' : ''}>
+                                        ${(not empty selectedRoomType && selectedRoomType == r.roomType) || 
+                                          (empty selectedRoomType && sessionScope.booking_room_type == r.roomType) ? 'selected' : ''}>
                                     ${r.roomType} - <fmt:formatNumber value="${r.price}" pattern="#,###" />₫/đêm
                                 </option>
                             </c:forEach>
@@ -721,6 +722,14 @@
             if (e.target.matches('input[type="number"], select, input[type="checkbox"]')) {
                 calculatePrice();
             }
+        });
+        
+        // Tự động tính giá khi page load (nếu có room được chọn từ parameter)
+        document.addEventListener('DOMContentLoaded', function() {
+            <c:if test="${not empty selectedRoomType}">
+                // Room đã được chọn từ parameter, tính lại giá
+                calculatePrice();
+            </c:if>
         });
     </script>
 </body>

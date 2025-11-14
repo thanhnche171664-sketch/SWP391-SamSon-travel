@@ -232,6 +232,12 @@
             <a href="${pageContext.request.contextPath}/offline-booking-list" class="active"><i class="fas fa-list"></i><span>Danh sách Booking</span></a>
             <a href="#"><i class="fas fa-headset"></i><span>Hỗ trợ</span></a>
         </nav>
+        <div class="sidebar-footer">
+            <a href="${pageContext.request.contextPath}/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
     </aside>
 
     <!-- Main -->

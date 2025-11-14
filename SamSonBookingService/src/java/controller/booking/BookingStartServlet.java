@@ -46,10 +46,29 @@ public class BookingStartServlet extends HttpServlet {
             List<MealService> mealServices = mealServiceDAO.getMealServicesByHotelId(hotelId);
             List<WellnessService> wellnessServices = wellnessServiceDAO.getWellnessServicesByHotelId(hotelId);
 
+            // Xử lý parameter room (nếu có) để tự động chọn phòng
+            String roomParam = request.getParameter("room");
+            String selectedRoomType = null;
+            if (roomParam != null && !roomParam.trim().isEmpty()) {
+                try {
+                    int roomId = Integer.parseInt(roomParam);
+                    // Tìm room theo ID và lấy roomType
+                    for (Room room : rooms) {
+                        if (room.getId() == roomId) {
+                            selectedRoomType = room.getRoomType();
+                            break;
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    // Invalid room parameter, ignore
+                }
+            }
+
             request.setAttribute("hotel", hotel);
             request.setAttribute("rooms", rooms);
             request.setAttribute("mealServices", mealServices);
             request.setAttribute("wellnessServices", wellnessServices);
+            request.setAttribute("selectedRoomType", selectedRoomType); // Room type được chọn từ parameter
             request.getRequestDispatcher("/bookings/booking_form.jsp").forward(request, response);
 
         } catch (NumberFormatException ex) {

@@ -204,7 +204,27 @@ public class AuthFilter implements Filter {
                        path.startsWith("/profile/");
                        
             case FRONT_OFFICE_ROLE:
-                return path.startsWith("/front-office/") || 
+                // Front Office (role ID 5) can access offline booking system
+                return path.startsWith("/offline-home") ||
+                       path.equals("/offline") ||
+                       path.equals("/room-list") ||
+                       path.startsWith("/room-list") ||
+                       path.equals("/service-list") ||
+                       path.startsWith("/service-list") ||
+                       path.equals("/offline-booking-list") ||
+                       path.startsWith("/offline-booking-list") ||
+                       path.startsWith("/customer-info") ||
+                       path.startsWith("/api/customer-detail") ||
+                       path.startsWith("/invoice") ||
+                       path.startsWith("/service-invoice") ||
+                       path.startsWith("/cart") ||
+                       path.startsWith("/clear-cart") ||
+                       path.startsWith("/api/cart/") ||
+                       path.startsWith("/booking") ||
+                       path.startsWith("/bookings/") ||
+                       path.startsWith("/payment") ||
+                       path.startsWith("/payment/") ||
+                       path.startsWith("/front-office/") || 
                        path.startsWith("/customer/") ||
                        path.equals("/dashboard.jsp") ||
                        path.equals("/profile.jsp") ||

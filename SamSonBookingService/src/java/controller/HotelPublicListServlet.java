@@ -55,14 +55,31 @@ public class HotelPublicListServlet extends HttpServlet {
             // Fetch all hotels or search results
             List<Hotel> hotels;
             if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+                LOGGER.info("Searching hotels with keyword: " + searchKeyword);
                 hotels = hotelDAO.searchHotels(searchKeyword);
             } else {
+                LOGGER.info("Fetching all hotels from database");
                 hotels = hotelDAO.getAllHotels();
             }
             
-            // Debug: Log hotel image URLs
-            for (Hotel hotel : hotels) {
-                LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + ", ImageUrl: " + hotel.getImageUrl());
+            // Debug logging
+            LOGGER.info("Total hotels retrieved: " + (hotels != null ? hotels.size() : "NULL"));
+            System.out.println("=== HotelPublicListServlet Debug ===");
+            System.out.println("Total hotels: " + (hotels != null ? hotels.size() : "NULL"));
+            
+            // Debug: Log hotel details
+            if (hotels != null && !hotels.isEmpty()) {
+                for (Hotel hotel : hotels) {
+                    LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + 
+                               ", Manager ID: " + hotel.getManagerId() + 
+                               ", ImageUrl: " + hotel.getImageUrl());
+                    System.out.println("  Hotel: ID=" + hotel.getId() + 
+                                     ", Name=" + hotel.getName() + 
+                                     ", ManagerID=" + hotel.getManagerId());
+                }
+            } else {
+                LOGGER.warning("⚠️ No hotels found in database!");
+                System.out.println("⚠️ WARNING: No hotels found in database!");
             }
             
             // Set request attributes
