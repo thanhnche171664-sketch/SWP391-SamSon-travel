@@ -72,6 +72,7 @@ public class BookingStartServlet extends HttpServlet {
             request.setAttribute("rooms", rooms);
             request.setAttribute("mealServices", mealServices);
             request.setAttribute("wellnessServices", wellnessServices);
+            request.setAttribute("transportServices", transportServices);
             request.setAttribute("selectedRoomType", selectedRoomType); // Room type được chọn từ parameter
             request.getRequestDispatcher("/bookings/booking_form.jsp").forward(request, response);
 
