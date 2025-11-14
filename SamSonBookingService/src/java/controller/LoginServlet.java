@@ -36,7 +36,7 @@ public class LoginServlet extends HttpServlet {
     private static final String SUCCESS_MESSAGE_ATTR = "successMessage";
     
     // Redirect URLs based on roles
-    private static final String ADMIN_DASHBOARD = "/admin/dashboard.jsp";
+    private static final String ADMIN_DASHBOARD = "/adminDashboard.jsp";
     private static final String SERVICE_MANAGER_DASHBOARD = "/wellness-list";
     private static final String HOTEL_MANAGER_DASHBOARD = "/hotel/list";
     private static final String CUSTOMER_DASHBOARD = "/home";
