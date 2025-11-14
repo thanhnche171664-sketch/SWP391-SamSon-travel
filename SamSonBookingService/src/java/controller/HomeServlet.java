@@ -14,7 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +37,7 @@ public class HomeServlet extends HttpServlet {
     private final TourMediaDAO tourMediaDAO = new TourMediaDAO();
     private final DiscountDAO discountDAO = new DiscountDAO();
     private final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAO();
+    private final ImageDAO imageDAO = new ImageDAO();
     
     /**
      * Handles GET requests to the homepage
@@ -111,12 +114,52 @@ public class HomeServlet extends HttpServlet {
                 hotels = createSampleHotels();
             }
             
-            // Debug: Log hotel image URLs
+            // Load ảnh cho mỗi hotel - ưu tiên image_url từ bảng Hotels, sau đó mới load từ bảng Images
+            Map<Integer, String> hotelImages = new HashMap<>();
             for (Hotel hotel : hotels) {
-                LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + ", ImageUrl: " + hotel.getImageUrl());
+                String imageUrl = null;
+                
+                // Ưu tiên 1: Kiểm tra image_url đã có trong Hotel object (từ bảng Hotels)
+                if (hotel.getImageUrl() != null && !hotel.getImageUrl().trim().isEmpty()) {
+                    imageUrl = hotel.getImageUrl();
+                    System.out.println("✓ Hotel ID " + hotel.getId() + " - Using image_url from Hotels table: " + imageUrl);
+                } else {
+                    // Ưu tiên 2: Load từ bảng Images nếu không có trong Hotels table
+                    System.out.println("Hotel ID " + hotel.getId() + " - No image_url in Hotels table, checking Images table...");
+                    
+                    try {
+                        Image primaryImage = imageDAO.getPrimaryImage("hotel", hotel.getId());
+                        if (primaryImage != null) {
+                            imageUrl = primaryImage.getImageUrl();
+                            System.out.println("✓ Found PRIMARY image from Images table: " + imageUrl);
+                        } else {
+                            Image firstImage = imageDAO.getFirstImage("hotel", hotel.getId());
+                            if (firstImage != null) {
+                                imageUrl = firstImage.getImageUrl();
+                                System.out.println("✓ Found FIRST image from Images table: " + imageUrl);
+                            } else {
+                                // Fallback
+                                imageUrl = "uploads/hotel_image/hotel_" + hotel.getId() + ".jpg";
+                                System.out.println("✗ No images found, fallback to: " + imageUrl);
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("✗ ERROR getting images: " + e.getMessage());
+                        imageUrl = "uploads/hotel_image/hotel_" + hotel.getId() + ".jpg";
+                    }
+                }
+                
+                // Đảm bảo imageUrl được set vào Hotel object
+                hotel.setImageUrl(imageUrl);
+                hotelImages.put(hotel.getId(), imageUrl);
+                
+                // Debug: Log hotel image URLs
+                LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + 
+                           ", ImageUrl: " + imageUrl);
             }
             
             data.setFeaturedHotels(hotels);
+            data.setHotelImages(hotelImages);
             
             // Fetch hero section images
             List<TourMedia> heroImages = tourMediaDAO.getHeroImages();
@@ -209,9 +252,22 @@ public class HomeServlet extends HttpServlet {
      */
     private HomepageData createSampleHomepageData() {
         HomepageData data = new HomepageData();
-        data.setFeaturedHotels(createSampleHotels());
+        List<Hotel> sampleHotels = createSampleHotels();
+        data.setFeaturedHotels(sampleHotels);
+        
+        // Create hotel images map for sample hotels
+        Map<Integer, String> hotelImages = new HashMap<>();
+        for (Hotel hotel : sampleHotels) {
+            if (hotel.getImageUrl() != null && !hotel.getImageUrl().isEmpty()) {
+                hotelImages.put(hotel.getId(), hotel.getImageUrl());
+            } else {
+                hotelImages.put(hotel.getId(), "uploads/hotels/default.jpg");
+            }
+        }
+        data.setHotelImages(hotelImages);
+        
         data.setHeroImages(createSampleHeroImages());
-        data.setTotalHotels(2);
+        data.setTotalHotels(sampleHotels.size());
         return data;
     }
     
@@ -279,6 +335,7 @@ public class HomeServlet extends HttpServlet {
      */
     public static class HomepageData {
         private List<Hotel> featuredHotels;
+        private Map<Integer, String> hotelImages;
         private List<TourMedia> heroImages;
         private List<Discount> activeDiscounts;
         private List<ServiceCategory> serviceCategories;
@@ -289,6 +346,9 @@ public class HomeServlet extends HttpServlet {
         // Getters and Setters
         public List<Hotel> getFeaturedHotels() { return featuredHotels; }
         public void setFeaturedHotels(List<Hotel> featuredHotels) { this.featuredHotels = featuredHotels; }
+        
+        public Map<Integer, String> getHotelImages() { return hotelImages; }
+        public void setHotelImages(Map<Integer, String> hotelImages) { this.hotelImages = hotelImages; }
         
         public List<TourMedia> getHeroImages() { return heroImages; }
         public void setHeroImages(List<TourMedia> heroImages) { this.heroImages = heroImages; }

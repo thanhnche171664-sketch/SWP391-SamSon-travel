@@ -659,12 +659,13 @@
         });
         
         function bookHotel(hotelId) {
-            window.location.href = '${pageContext.request.contextPath}/hotel-details?id=' + hotelId + '#rooms';
+            // Chuyển đến trang booking với hotel ID
+            window.location.href = '${pageContext.request.contextPath}/bookings?hotel=' + hotelId;
         }
         
         function bookRoom(hotelId, roomId) {
-            // TODO: Implement booking functionality
-            alert('Chức năng đặt phòng đang được phát triển. Vui lòng liên hệ hotline để đặt phòng.');
+            // Chuyển đến trang booking với hotel ID và room ID
+            window.location.href = '${pageContext.request.contextPath}/bookings?hotel=' + hotelId + '&room=' + roomId;
         }
     </script>
 </body>

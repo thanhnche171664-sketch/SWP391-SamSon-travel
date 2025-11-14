@@ -87,6 +87,31 @@ public class HotelPublicDetailServlet extends HttpServlet {
                 
                 // Debug: Log hotel image URL
                 LOGGER.info("Hotel ID: " + hotel.getId() + ", Name: " + hotel.getName() + ", ImageUrl: " + hotel.getImageUrl());
+                System.out.println("=== HotelPublicDetailServlet Debug ===");
+                System.out.println("Hotel ID: " + hotel.getId());
+                System.out.println("Hotel Name: " + hotel.getName());
+                System.out.println("Hotel ImageUrl from Hotels table: " + hotel.getImageUrl());
+                
+                // Đảm bảo imageUrl được set (nếu chưa có thì load từ Images table)
+                if (hotel.getImageUrl() == null || hotel.getImageUrl().trim().isEmpty()) {
+                    System.out.println("No imageUrl in Hotels table, loading from Images table...");
+                    Image primaryImage = imageDAO.getPrimaryImage("hotel", hotelId);
+                    if (primaryImage != null) {
+                        hotel.setImageUrl(primaryImage.getImageUrl());
+                        System.out.println("✓ Found PRIMARY image: " + primaryImage.getImageUrl());
+                    } else {
+                        Image firstImage = imageDAO.getFirstImage("hotel", hotelId);
+                        if (firstImage != null) {
+                            hotel.setImageUrl(firstImage.getImageUrl());
+                            System.out.println("✓ Found FIRST image: " + firstImage.getImageUrl());
+                        } else {
+                            hotel.setImageUrl("uploads/hotel_image/hotel_" + hotelId + ".jpg");
+                            System.out.println("✗ Fallback to: " + hotel.getImageUrl());
+                        }
+                    }
+                } else {
+                    System.out.println("✓ Using imageUrl from Hotels table: " + hotel.getImageUrl());
+                }
                 
                 // Set request attributes
                 request.setAttribute("currentUser", currentUser);

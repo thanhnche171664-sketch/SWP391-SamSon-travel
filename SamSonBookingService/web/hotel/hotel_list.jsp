@@ -5,10 +5,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Danh sách Khách sạn - Hotel Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        /* TẮT HOÀN TOÀN MỌI ANIMATION VÀ TRANSITION - ĐẶT ĐẦU TIÊN */
+        html, body, *, *::before, *::after {
+            animation: none !important;
+            transition: none !important;
+            -webkit-animation: none !important;
+            -webkit-transition: none !important;
+            -moz-animation: none !important;
+            -moz-transition: none !important;
+            -o-animation: none !important;
+            -o-transition: none !important;
+            transform: none !important;
+            -webkit-transform: none !important;
+            -moz-transform: none !important;
+            -o-transform: none !important;
+            will-change: auto !important;
+            backface-visibility: visible !important;
+            perspective: none !important;
+            transform-style: flat !important;
+        }
+        
+        /* Override Bootstrap table styles ngay từ đầu */
+        .table, .table-hover, table, .table-striped, .table-bordered {
+            --bs-table-hover-bg: transparent !important;
+            --bs-table-striped-bg: transparent !important;
+            --bs-table-active-bg: transparent !important;
+        }
+        
+        /* ĐẶC BIỆT TẮT CHO TABLE ELEMENTS - CSS MẠNH NHẤT */
+        table, table *, table tr, table td, table th, table tbody, table thead,
+        .table, .table *, .table tr, .table td, .table th, .table tbody, .table thead,
+        .table-hover, .table-hover *, .table-hover tr, .table-hover td, .table-hover th,
+        .hotel-table, .hotel-table *, .hotel-table tr, .hotel-table td, .hotel-table th {
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+            -webkit-animation: none !important;
+            -webkit-transition: none !important;
+            -webkit-transform: none !important;
+            -moz-animation: none !important;
+            -moz-transition: none !important;
+            -moz-transform: none !important;
+            -o-animation: none !important;
+            -o-transition: none !important;
+            -o-transform: none !important;
+            will-change: auto !important;
+            backface-visibility: visible !important;
+        }
+        
+        /* TẮT HOÀN TOÀN HOVER EFFECT TRÊN TABLE */
+        .table-hover tbody tr:hover,
+        .table-hover tbody tr:focus,
+        .table-hover tbody tr:active,
+        table tbody tr:hover,
+        table tbody tr:focus,
+        table tbody tr:active,
+        .hotel-table tbody tr:hover,
+        .hotel-table tbody tr:focus,
+        .hotel-table tbody tr:active {
+            background-color: white !important;
+            background: white !important;
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* TẮT TẤT CẢ PSEUDO-ELEMENTS */
+        table tbody tr::before,
+        table tbody tr::after,
+        table td::before,
+        table td::after {
+            display: none !important;
+            animation: none !important;
+            transition: none !important;
+        }
+        
+        html {
+            scroll-behavior: auto !important;
+        }
+        
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -23,8 +104,8 @@
         .page-header {
             background: white;
             padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
             margin-bottom: 25px;
         }
         
@@ -32,6 +113,7 @@
             color: #333;
             margin: 0;
             font-weight: 600;
+            font-size: 24px;
         }
         
         .stats-row {
@@ -44,8 +126,8 @@
             flex: 1;
             background: white;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
             border-left: 4px solid #667eea;
         }
         
@@ -63,9 +145,8 @@
         }
         
         .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
             background: white;
         }
         
@@ -74,13 +155,13 @@
         }
         
         .search-box input {
-            border-radius: 10px;
+            border-radius: 4px;
             border: 1px solid #ddd;
             padding: 10px 15px;
         }
         
         .search-box button {
-            border-radius: 10px;
+            border-radius: 4px;
             padding: 10px 25px;
         }
         
@@ -90,66 +171,83 @@
         
         .hotel-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
+            border-collapse: collapse;
+            animation: none !important;
+            transition: none !important;
         }
         
         .hotel-table thead th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #667eea !important;
+            color: white !important;
             font-weight: 600;
-            padding: 15px;
-            border: none;
+            padding: 12px;
+            border: 1px solid #5568d3 !important;
             font-size: 14px;
             text-align: center;
         }
         
-        .hotel-table thead th:first-child {
-            border-radius: 10px 0 0 10px;
-        }
-        
-        .hotel-table thead th:last-child {
-            border-radius: 0 10px 10px 0;
-        }
-        
         .hotel-table tbody tr {
-            background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+            background: white !important;
+            background-color: white !important;
+            border-bottom: 1px solid #e0e0e0;
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+            will-change: auto !important;
         }
         
-        .hotel-table tbody tr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        /* TẮT HOÀN TOÀN HOVER EFFECT - KHÔNG BAO GIỜ ĐỔI MÀU */
+        .hotel-table tbody tr:hover,
+        .hotel-table tbody tr:focus,
+        .hotel-table tbody tr:active,
+        .hotel-table tbody tr:visited {
+            background: white !important;
+            background-color: white !important;
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+            box-shadow: none !important;
+            opacity: 1 !important;
         }
         
         .hotel-table tbody td {
-            padding: 15px;
+            padding: 12px;
             vertical-align: middle;
-            border: none;
+            border: 1px solid #e0e0e0;
             text-align: center;
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+            background: white !important;
+            background-color: white !important;
         }
         
-        .hotel-table tbody tr td:first-child {
-            border-radius: 10px 0 0 10px;
+        .hotel-table tbody td:hover {
+            background: white !important;
+            background-color: white !important;
         }
         
-        .hotel-table tbody tr td:last-child {
-            border-radius: 0 10px 10px 0;
+        /* Override Bootstrap table styles - CSS MẠNH NHẤT */
+        .table-container,
+        .table-container table,
+        .table-container table *,
+        .table-container table tr,
+        .table-container table td,
+        .table-container table th,
+        .table-container table tbody,
+        .table-container table thead {
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+            will-change: auto !important;
         }
         
         .hotel-image {
             width: 100px;
             height: 80px;
             object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .hotel-image:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            border: 1px solid #ddd;
         }
         
         .hotel-name {
@@ -166,12 +264,11 @@
         }
         
         .btn-action {
-            padding: 8px;
-            border-radius: 10px;
+            padding: 6px 10px;
+            border-radius: 4px;
             font-size: 14px;
             border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 0 2px;
         }
         
         .btn-detail {
@@ -181,8 +278,7 @@
         
         .btn-detail:hover {
             background-color: #138496;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+            color: white;
         }
         
         .btn-edit {
@@ -192,8 +288,7 @@
         
         .btn-edit:hover {
             background-color: #e0a800;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+            color: white;
         }
         
         .btn-delete {
@@ -203,8 +298,7 @@
         
         .btn-delete:hover {
             background-color: #c82333;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+            color: white;
         }
         
         .pagination {
@@ -213,8 +307,8 @@
         }
         
         .pagination .page-link {
-            border-radius: 8px;
-            margin: 0 5px;
+            border-radius: 4px;
+            margin: 0 2px;
             border: 1px solid #ddd;
             color: #667eea;
         }
@@ -230,8 +324,8 @@
         }
         
         .alert {
-            border-radius: 10px;
-            border: none;
+            border-radius: 4px;
+            border: 1px solid;
         }
         
         .empty-state {
@@ -275,17 +369,17 @@
         <div class="stats-row">
             <div class="stat-card">
                 <h5><i class="bi bi-building"></i> Tổng số khách sạn</h5>
-                <h3>${totalRecords}</h3>
+                <h3>${totalRecords != null ? totalRecords : 0}</h3>
             </div>
             <div class="stat-card" style="border-left-color: #28a745;">
                 <h5><i class="bi bi-check-circle"></i> Đang hoạt động</h5>
-                <h3>${totalRecords}</h3>
+                <h3>${totalRecords != null ? totalRecords : 0}</h3>
             </div>
         </div>
         
         <!-- Alerts -->
         <c:if test="${not empty sessionScope.success}">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible show" role="alert">
                 <i class="bi bi-check-circle"></i> ${sessionScope.success}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -293,7 +387,7 @@
         </c:if>
         
         <c:if test="${not empty sessionScope.successMessage}">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible show" role="alert">
                 <i class="bi bi-check-circle"></i> ${sessionScope.successMessage}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -301,7 +395,7 @@
         </c:if>
         
         <c:if test="${not empty sessionScope.error}">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible show" role="alert">
                 <i class="bi bi-exclamation-triangle"></i> ${sessionScope.error}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -309,7 +403,7 @@
         </c:if>
         
         <c:if test="${not empty sessionScope.errorMessage}">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="white-space: pre-line;">
+            <div class="alert alert-danger alert-dismissible show" role="alert" style="white-space: pre-line;">
                 <i class="bi bi-exclamation-triangle-fill"></i> 
                 <strong>Cảnh báo!</strong><br/>
                 ${sessionScope.errorMessage}
@@ -350,7 +444,7 @@
                             </div>
                         </c:when>
                         <c:otherwise>
-                            <table class="hotel-table">
+                            <table class="hotel-table" style="animation: none !important; transition: none !important;">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -363,7 +457,7 @@
                                 </thead>
                                 <tbody>
                                     <c:forEach var="hotel" items="${hotelList}">
-                                        <tr>
+                                        <tr style="background: white !important; animation: none !important; transition: none !important;">
                                             <td style="text-align: center;">
                                                 <strong style="color: #667eea; font-size: 16px;">#${hotel.id}</strong>
                                             </td>
@@ -455,6 +549,81 @@
         </div>
     </div>
     
+    <!-- CHỈ LOAD BOOTSTRAP JS CHO ALERT DISMISS, KHÔNG ẢNH HƯỞNG TABLE -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // TẮT HOÀN TOÀN MỌI ANIMATION VÀ TRANSITION BẰNG JAVASCRIPT
+        (function() {
+            'use strict';
+            
+            // Tắt CSS transitions và animations ngay lập tức
+            var style = document.createElement('style');
+            style.id = 'no-animation-style';
+            style.textContent = `
+                *, *::before, *::after {
+                    animation: none !important;
+                    transition: none !important;
+                    -webkit-animation: none !important;
+                    -webkit-transition: none !important;
+                    -moz-animation: none !important;
+                    -moz-transition: none !important;
+                    -o-animation: none !important;
+                    -o-transition: none !important;
+                    transform: none !important;
+                    -webkit-transform: none !important;
+                    -moz-transform: none !important;
+                    -o-transform: none !important;
+                }
+                table, table *, table tr, table td, table th, table tbody, table thead {
+                    animation: none !important;
+                    transition: none !important;
+                    transform: none !important;
+                }
+                .hotel-table tbody tr:hover,
+                .hotel-table tbody tr:focus,
+                .hotel-table tbody tr:active {
+                    background: white !important;
+                    background-color: white !important;
+                }
+            `;
+            document.head.insertBefore(style, document.head.firstChild);
+            
+            // Force table rows luôn giữ màu trắng
+            function forceTableWhite() {
+                var tableRows = document.querySelectorAll('.hotel-table tbody tr');
+                tableRows.forEach(function(row) {
+                    // Set inline style để override mọi thứ
+                    row.style.setProperty('background', 'white', 'important');
+                    row.style.setProperty('background-color', 'white', 'important');
+                    row.style.setProperty('animation', 'none', 'important');
+                    row.style.setProperty('transition', 'none', 'important');
+                    row.style.setProperty('transform', 'none', 'important');
+                    
+                    // Event listeners để force màu trắng khi hover
+                    row.addEventListener('mouseenter', function(e) {
+                        e.currentTarget.style.setProperty('background', 'white', 'important');
+                        e.currentTarget.style.setProperty('background-color', 'white', 'important');
+                    }, true);
+                    row.addEventListener('mouseleave', function(e) {
+                        e.currentTarget.style.setProperty('background', 'white', 'important');
+                        e.currentTarget.style.setProperty('background-color', 'white', 'important');
+                    }, true);
+                });
+            }
+            
+            // Chạy ngay khi DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', forceTableWhite);
+            } else {
+                forceTableWhite();
+            }
+            
+            // Chạy lại sau khi page load xong
+            window.addEventListener('load', forceTableWhite);
+            
+            // Chạy lại sau 100ms để đảm bảo
+            setTimeout(forceTableWhite, 100);
+        })();
+    </script>
 </body>
 </html>

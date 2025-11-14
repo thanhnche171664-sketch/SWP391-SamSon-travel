@@ -57,13 +57,32 @@ public class HotelListServlet extends HttpServlet {
             }
         }
 
-        // Hotel Manager chỉ thấy khách sạn của mình quản lý
-        Integer managerId = user.getId();
+        // Không filter theo manager_id - hiển thị tất cả hotels
+        Integer managerId = null; // Không filter theo manager
+        
+        // Debug logging
+        System.out.println("=== HotelListServlet Debug ===");
+        System.out.println("User ID: " + user.getId());
+        System.out.println("Role ID: " + user.getRoleId());
+        System.out.println("Current Page: " + currentPage);
+        System.out.println("Search Keyword: " + searchKeyword);
+        System.out.println("Manager ID Filter: DISABLED (showing all hotels)");
 
-        // Lấy danh sách khách sạn với phân trang
+        // Lấy danh sách khách sạn với phân trang (không filter theo manager_id)
         List<Hotel> hotelList = hotelDAO.getHotelsPaginated(currentPage, PAGE_SIZE, searchKeyword, managerId);
         int totalRecords = hotelDAO.countHotelsFiltered(searchKeyword, managerId);
         int totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
+        
+        // Debug logging
+        System.out.println("=== Results ===");
+        System.out.println("Hotel List Size: " + (hotelList != null ? hotelList.size() : "NULL"));
+        System.out.println("Total Records: " + totalRecords);
+        System.out.println("Total Pages: " + totalPages);
+        if (hotelList != null && !hotelList.isEmpty()) {
+            System.out.println("First Hotel: " + hotelList.get(0).toString());
+        } else {
+            System.out.println("⚠️ WARNING: No hotels found in database");
+        }
 
         // Load ảnh cho mỗi hotel
         ImageDAO imageDAO = new ImageDAO();
