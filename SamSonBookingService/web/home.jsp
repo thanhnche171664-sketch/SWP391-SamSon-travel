@@ -186,12 +186,26 @@
                     <c:forEach var="hotel" items="${homepageData.featuredHotels}" varStatus="status">
                         <div class="hotel-card animate-slide-up" style="animation-delay: ${status.index * 0.1}s">
                             <div class="hotel-card-image">
-                                <img src="${pageContext.request.contextPath}/assets/images/hotels/hotel-${hotel.id}.jpg" 
-                                     alt="${hotel.name}" loading="lazy">
-                                <div class="hotel-card-rating">
-                                    <i class="fas fa-star"></i>
-                                    <span><fmt:formatNumber value="${hotel.rating}" maxFractionDigits="1"/></span>
-                                </div>
+                                <c:choose>
+                                    <c:when test="${not empty hotel.imageUrl}">
+                                        <img src="${pageContext.request.contextPath}/${hotel.imageUrl}" 
+                                             alt="${hotel.name}" 
+                                             loading="lazy"
+                                             onerror="console.error('Failed to load image: ${hotel.imageUrl}'); this.src='${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg';">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${pageContext.request.contextPath}/uploads/hotel_image/hotel_1.jpg" 
+                                             alt="${hotel.name}" 
+                                             loading="lazy"
+                                             onerror="this.style.display='none';">
+                                    </c:otherwise>
+                                </c:choose>
+                                <c:if test="${hotel.rating > 0}">
+                                    <div class="hotel-card-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span><fmt:formatNumber value="${hotel.rating}" maxFractionDigits="1"/></span>
+                                    </div>
+                                </c:if>
                             </div>
                             
                             <div class="hotel-card-content">

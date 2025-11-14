@@ -42,8 +42,11 @@ public class HotelDAO {
         "ORDER BY rating DESC";
     
     private static final String INSERT_HOTEL = 
-        "INSERT INTO Hotels (name, address, description, manager_id) " +
-        "VALUES (?, ?, ?, ?)";
+        "INSERT INTO Hotels (name, address, description) " +
+        "VALUES (?, ?, ?)";
+    
+    private static final String GET_LAST_INSERTED_HOTEL = 
+        "SELECT TOP 1 id FROM Hotels WHERE name = ? ORDER BY created_at DESC";
     
     private static final String UPDATE_HOTEL = 
         "UPDATE Hotels SET name = ?, address = ?, description = ?, manager_id = ?, " +
@@ -92,12 +95,22 @@ public class HotelDAO {
              PreparedStatement statement = connection.prepareStatement(GET_ALL_HOTELS);
              ResultSet resultSet = statement.executeQuery()) {
             
+            System.out.println("=== HotelDAO.getAllHotels Debug ===");
+            System.out.println("SQL: " + GET_ALL_HOTELS);
+            
+            int count = 0;
             while (resultSet.next()) {
                 hotels.add(mapResultSetToHotel(resultSet));
+                count++;
             }
+            
+            System.out.println("Rows returned: " + count);
+            LOGGER.info("Retrieved " + count + " hotels from database");
             
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error getting all hotels", e);
+            System.err.println("SQL Error in getAllHotels: " + e.getMessage());
+            e.printStackTrace();
         }
         return hotels;
     }
@@ -195,26 +208,66 @@ public class HotelDAO {
     }
     
     /**
-     * Insert new hotel
+     * Insert new hotel and return the generated ID
      * @param hotel Hotel object to insert
-     * @return true if successful, false otherwise
+     * @return Hotel ID if successful, -1 otherwise
      */
-    public boolean insertHotel(Hotel hotel) {
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement = connection.prepareStatement(INSERT_HOTEL)) {
+    public int insertHotel(Hotel hotel) {
+        try (Connection connection = DBContext.getConnection()) {
+            // Insert hotel (không set manager_id - để NULL)
+            try (PreparedStatement insertStmt = connection.prepareStatement(INSERT_HOTEL)) {
+                insertStmt.setString(1, hotel.getName());
+                insertStmt.setString(2, hotel.getAddress());
+                insertStmt.setString(3, hotel.getDescription());
+                // manager_id được set NULL trong SQL, không cần set parameter
+                
+                int rowsAffected = insertStmt.executeUpdate();
+                if (rowsAffected > 0) {
+                    // Query lại để lấy ID vừa tạo (dùng name + created_at DESC, không dùng manager_id)
+                    try (PreparedStatement selectStmt = connection.prepareStatement(GET_LAST_INSERTED_HOTEL)) {
+                        selectStmt.setString(1, hotel.getName());
+                        
+                        try (ResultSet rs = selectStmt.executeQuery()) {
+                            if (rs.next()) {
+                                int hotelId = rs.getInt("id");
+                                LOGGER.info("✅ Hotel inserted successfully with ID: " + hotelId);
+                                System.out.println("✅ HotelDAO.insertHotel - Hotel ID: " + hotelId);
+                                System.out.println("   Hotel Name: " + hotel.getName());
+                                System.out.println("   Manager ID: NULL (not set)");
+                                return hotelId;
+                            }
+                        }
+                    }
+                } else {
+                    LOGGER.warning("⚠️ No rows affected when inserting hotel: " + hotel.getName());
+                    System.err.println("⚠️ WARNING: No rows affected when inserting hotel");
+                    return -1;
+                }
+            }
             
-            statement.setString(1, hotel.getName());
-            statement.setString(2, hotel.getAddress());
-            statement.setString(3, hotel.getDescription());
-            statement.setInt(4, hotel.getManagerId());
-            
-            int rowsAffected = statement.executeUpdate();
-            return rowsAffected > 0;
+            LOGGER.warning("⚠️ Hotel inserted but could not retrieve ID");
+            System.err.println("⚠️ WARNING: Could not get hotel ID after insert");
+            return -1;
             
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error inserting hotel: " + hotel.getName(), e);
-            return false;
+            LOGGER.log(Level.SEVERE, "❌ Error inserting hotel: " + hotel.getName(), e);
+            System.err.println("❌ SQL Error inserting hotel: " + e.getMessage());
+            System.err.println("SQL State: " + e.getSQLState());
+            System.err.println("Error Code: " + e.getErrorCode());
+            e.printStackTrace();
+            return -1;
         }
+    }
+    
+    /**
+     * Insert new hotel (backward compatibility - returns boolean)
+     * @param hotel Hotel object to insert
+     * @return true if successful, false otherwise
+     * @deprecated Use insertHotel(Hotel) which returns int instead
+     */
+    @Deprecated
+    public boolean insertHotelBoolean(Hotel hotel) {
+        return insertHotel(hotel) > 0;
     }
     
     /**
@@ -317,14 +370,26 @@ public class HotelDAO {
             statement.setInt(paramIndex++, (page - 1) * pageSize);
             statement.setInt(paramIndex, pageSize);
             
+            // Debug logging
+            System.out.println("=== HotelDAO.getHotelsPaginated Debug ===");
+            System.out.println("SQL: " + sql);
+            System.out.println("Page: " + page + ", PageSize: " + pageSize);
+            System.out.println("SearchKeyword: " + searchKeyword);
+            System.out.println("ManagerId: " + managerId);
+            
             try (ResultSet resultSet = statement.executeQuery()) {
+                int count = 0;
                 while (resultSet.next()) {
                     hotels.add(mapResultSetToHotel(resultSet));
+                    count++;
                 }
+                System.out.println("Rows returned: " + count);
             }
             
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error getting paginated hotels", e);
+            System.err.println("SQL Error in getHotelsPaginated: " + e.getMessage());
+            e.printStackTrace();
         }
         return hotels;
     }
@@ -359,14 +424,24 @@ public class HotelDAO {
                 statement.setInt(paramIndex++, managerId);
             }
             
+            // Debug logging
+            System.out.println("=== HotelDAO.countHotelsFiltered Debug ===");
+            System.out.println("SQL: " + sql);
+            System.out.println("SearchKeyword: " + searchKeyword);
+            System.out.println("ManagerId: " + managerId);
+            
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getInt(1);
+                    int count = resultSet.getInt(1);
+                    System.out.println("Total count: " + count);
+                    return count;
                 }
             }
             
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error counting filtered hotels", e);
+            System.err.println("SQL Error in countHotelsFiltered: " + e.getMessage());
+            e.printStackTrace();
         }
         return 0;
     }
@@ -427,8 +502,19 @@ public class HotelDAO {
             // Field may not exist in some queries
         }
         
-        hotel.setCreatedAt(resultSet.getDate("created_at"));
-        hotel.setUpdatedAt(resultSet.getDate("updated_at"));
+        try {
+            java.sql.Date createdAt = resultSet.getDate("created_at");
+            hotel.setCreatedAt(createdAt);
+        } catch (SQLException e) {
+            LOGGER.warning("created_at field not found or error reading: " + e.getMessage());
+        }
+        
+        try {
+            java.sql.Date updatedAt = resultSet.getDate("updated_at");
+            hotel.setUpdatedAt(updatedAt);
+        } catch (SQLException e) {
+            LOGGER.warning("updated_at field not found or error reading: " + e.getMessage());
+        }
         
         return hotel;
     }

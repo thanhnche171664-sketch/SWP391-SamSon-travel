@@ -90,29 +90,52 @@ public class AddHotelServlet extends HttpServlet {
                 return;
             }
 
+            // Validate address (có thể null)
+            if (address == null) {
+                address = "";
+            }
+            if (description == null) {
+                description = "";
+            }
+
             // Tạo đối tượng Hotel
             Hotel hotel = new Hotel();
-            hotel.setName(name);
-            hotel.setAddress(address);
-            hotel.setDescription(description);
-            hotel.setManagerId(user.getId());
+            hotel.setName(name.trim());
+            hotel.setAddress(address.trim());
+            hotel.setDescription(description.trim());
+            // Không set manager_id - để NULL hoặc 0
+            hotel.setManagerId(0); // Hoặc có thể để NULL nếu database cho phép
+            
+            // Debug logging
+            System.out.println("=== AddHotelServlet Debug ===");
+            System.out.println("Hotel Name: " + hotel.getName());
+            System.out.println("Hotel Address: " + hotel.getAddress());
+            System.out.println("Hotel Description: " + (hotel.getDescription() != null ? hotel.getDescription().substring(0, Math.min(50, hotel.getDescription().length())) : "NULL"));
+            System.out.println("Manager ID: NOT SET (0 or NULL)");
 
-            // Lưu vào database
-            boolean success = hotelDAO.insertHotel(hotel);
+            // Lưu vào database và lấy ID
+            int hotelId = hotelDAO.insertHotel(hotel);
 
-            if (success) {
-                // Lấy ID của hotel vừa tạo
-                Hotel createdHotel = hotelDAO.getHotelByNameAndManagerId(name, user.getId());
+            if (hotelId > 0) {
+                System.out.println("✅ Hotel inserted successfully with ID: " + hotelId);
                 
+                // Xử lý upload nhiều ảnh
+                handleMultipleFileUpload(request, hotelId);
+                
+                // Kiểm tra lại hotel vừa tạo
+                Hotel createdHotel = hotelDAO.getHotelById(hotelId);
                 if (createdHotel != null) {
-                    // Xử lý upload nhiều ảnh
-                    handleMultipleFileUpload(request, createdHotel.getId());
+                    System.out.println("✅ Hotel verified in database: " + createdHotel.getName());
+                } else {
+                    System.out.println("⚠️ WARNING: Hotel not found after insert! ID: " + hotelId);
                 }
                 
                 session.setAttribute("success", "Thêm khách sạn thành công!");
+                session.setAttribute("successMessage", "Khách sạn đã được thêm vào hệ thống và sẽ hiển thị trên trang công khai.");
                 response.sendRedirect(request.getContextPath() + "/hotel/list");
             } else {
-                request.setAttribute("error", "Có lỗi xảy ra khi thêm khách sạn!");
+                System.err.println("❌ ERROR: Failed to insert hotel");
+                request.setAttribute("error", "Có lỗi xảy ra khi thêm khách sạn vào database!");
                 request.getRequestDispatcher("/hotel/hotel_add.jsp").forward(request, response);
             }
 
