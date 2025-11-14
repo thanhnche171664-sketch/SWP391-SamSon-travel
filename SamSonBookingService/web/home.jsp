@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -88,8 +89,16 @@
         <section id="home" class="hero-section" aria-label="Hero section">
             <div class="hero-slider" id="heroSlider" role="img" aria-label="Hero images showcasing SamSon Travel destinations">
                 <c:forEach var="heroImage" items="${homepageData.heroImages}" varStatus="status">
+                    <c:choose>
+                        <c:when test="${heroImage.fileUrl != null && (fn:startsWith(heroImage.fileUrl, 'http://') || fn:startsWith(heroImage.fileUrl, 'https://'))}">
+                            <c:set var="imageUrl" value="${heroImage.fileUrl}" />
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/uploads/${heroImage.fileUrl}" />
+                        </c:otherwise>
+                    </c:choose>
                     <div class="hero-slide ${status.first ? 'active' : ''}" 
-                         style="background-image: url('${pageContext.request.contextPath}/uploads/${heroImage.fileUrl}')"
+                         style="background-image: url('${imageUrl}')"
                          aria-hidden="${status.first ? 'false' : 'true'}">
                     </div>
                 </c:forEach>
